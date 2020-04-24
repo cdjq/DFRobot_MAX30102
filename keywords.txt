@@ -1,0 +1,46 @@
+#######################################
+# Syntax Coloring DFRobot_MAX30102
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+DFRobot_MAX30102	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+              
+begin	KEYWORD2
+sendCmd	KEYWORD2
+sendData	KEYWORD2
+write	KEYWORD2
+latch	KEYWORD2
+setMode	KEYWORD2
+setRgbLed	KEYWORD2
+autoColorChange	KEYWORD2
+setMonochromeLed	KEYWORD2
+              
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+LED_BIN_COUNT	LITERAL1
+LED_RGB_NO	LITERAL1
+C0	LITERAL1
+B0	LITERAL1
+A0	LITERAL1
+C1	LITERAL1
+B1	LITERAL1
+A1	LITERAL1
+C2	LITERAL1
+B2	LITERAL1
+A2	LITERAL1
+C3	LITERAL1
+B3	LITERAL1
+A3	LITERAL1
+LED0	LITERAL1
+LED1	LITERAL1
+LED2	LITERAL1
+LED3	LITERAL1
