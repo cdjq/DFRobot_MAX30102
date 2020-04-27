@@ -1,17 +1,3 @@
-/*!
- * @file DFRobot_MAX30102.h
- * @brief Define the basic structure of class DFRobot_MAX30102
- * @n 这是一个有12路引脚的LED灯驱动芯片，实现了下面这些功能
- * @n 控制12路单色LED灯的亮度
- * @n 控制4路带RGB引脚的LED灯闪烁、亮度和变色，支持12V电源供电的LED灯，最高承受17V
- * @n 驱动可级联，每次收到新数据会将旧数据往后传递，每次发送N组数据锁存后可控制N个驱动
- * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
- * @licence     The MIT License (MIT)
- * @author [YeHangYu](hangyu.ye@dfrobot.com)
- * @version  V1.0
- * @date  2020-03-30
- * @https://github.com/DFRobot/DFRobot_MAX30102
- */
 #include <DFRobot_MAX30102.h>
 //最多存储32个样本，这是微控制器的附加本地存储
 const int STORAGE_SIZE = 4;
@@ -30,10 +16,8 @@ DFRobot_MAX30102::DFRobot_MAX30102(void)
 /***************************************************
   This is a library written for the Maxim DFRobot_MAX30102 Optical Smoke Detector
   It should also work with the MAX30102. However, the MAX30102 does not have a Green LED.
-
   These sensors use I2C to communicate, as well as a single (optional)
   interrupt line that is not currently supported in this driver.
-
   Written by Peter Jansen and Nathan Seidle (SparkFun)
   BSD license, all text above must be included in any redistribution.
  *****************************************************/

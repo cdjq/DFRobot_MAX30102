@@ -22,16 +22,15 @@ DFRobot_MAX30102 particleSensor;
 
 void setup()
 {
+  //串口初始化
   Serial.begin(115200);
-
-  //初始化传感器
-  if (particleSensor.begin() == false)
-  {
-    Serial.println("Failed to initialize the particle Sensor");
+  //传感器初始化
+  if (particleSensor.begin() == false) {
+    Serial.println("MAX30102 was not found");
     while (1);
   }
-
-  particleSensor.setup(); //Configure sensor. Use 6.4mA for LED drive
+  //传感器配置
+  particleSensor.setup(); //Use 6.4mA for LED drive
 }
 
 void loop()
@@ -40,7 +39,5 @@ void loop()
   Serial.print(particleSensor.getRed());
   Serial.print("] IR[");
   Serial.print(particleSensor.getIR());
-  Serial.print("]");
-
-  Serial.println();
+  Serial.println("]");
 }

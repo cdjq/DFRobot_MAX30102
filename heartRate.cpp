@@ -3,7 +3,7 @@
  By: Nathan Seidle
  SparkFun Electronics
  Date: October 2nd, 2016
- 
+
  Given a series of IR samples from the DFRobot_MAX30102 we discern when a heart beat is occurring
 
  Let's have a brief chat about what this code does. We're going to try to detect
@@ -19,7 +19,7 @@
  http://www.techforfuture.nl/fjc_documents/mitrabaratchi-measuringheartratewithopticalsensor.pdf
  https://fruct.org/publications/fruct13/files/Lau.pdf
 
- This is an implementation of Maxim's PBA (Penpheral Beat Amplitude) algorithm. It's been 
+ This is an implementation of Maxim's PBA (Penpheral Beat Amplitude) algorithm. It's been
  converted to work within the Arduino framework.
 */
 
@@ -52,7 +52,7 @@
 * trademarks, maskwork rights, or any other form of intellectual
 * property whatsoever. Maxim Integrated Products, Inc. retains all
 * ownership rights.
-* 
+*
 */
 
 #include "heartRate.h"
@@ -84,7 +84,7 @@ bool checkForBeat(int32_t sample)
 
   // Save current state
   IR_AC_Signal_Previous = IR_AC_Signal_Current;
-  
+
   //This is good to view for debugging
   //Serial.print("Signal_Current: ");
   //Serial.println(IR_AC_Signal_Current);
@@ -94,9 +94,8 @@ bool checkForBeat(int32_t sample)
   IR_AC_Signal_Current = lowPassFIRFilter(sample - IR_Average_Estimated);
 
   // Detect positive zero crossing (rising edge)
-  if ((IR_AC_Signal_Previous < 0) & (IR_AC_Signal_Current >= 0))
-  {
-  
+  if ((IR_AC_Signal_Previous < 0) & (IR_AC_Signal_Current >= 0)) {
+
     IR_AC_Max = IR_AC_Signal_max; //Adjust our AC max and min
     IR_AC_Min = IR_AC_Signal_min;
 
@@ -105,33 +104,29 @@ bool checkForBeat(int32_t sample)
     IR_AC_Signal_max = 0;
 
     //if ((IR_AC_Max - IR_AC_Min) > 100 & (IR_AC_Max - IR_AC_Min) < 1000)
-    if ((IR_AC_Max - IR_AC_Min) > 20 & (IR_AC_Max - IR_AC_Min) < 1000)
-    {
+    if ((IR_AC_Max - IR_AC_Min) > 20 & (IR_AC_Max - IR_AC_Min) < 1000) {
       //Heart beat!!!
       beatDetected = true;
     }
   }
 
   // Detect negative zero crossing (falling edge)
-  if ((IR_AC_Signal_Previous > 0) & (IR_AC_Signal_Current <= 0))
-  {
+  if ((IR_AC_Signal_Previous > 0) & (IR_AC_Signal_Current <= 0)) {
     positiveEdge = 0;
     negativeEdge = 1;
     IR_AC_Signal_min = 0;
   }
 
   // Find Maximum value in positive cycle
-  if (positiveEdge & (IR_AC_Signal_Current > IR_AC_Signal_Previous))
-  {
+  if (positiveEdge & (IR_AC_Signal_Current > IR_AC_Signal_Previous)) {
     IR_AC_Signal_max = IR_AC_Signal_Current;
   }
 
   // Find Minimum value in negative cycle
-  if (negativeEdge & (IR_AC_Signal_Current < IR_AC_Signal_Previous))
-  {
+  if (negativeEdge & (IR_AC_Signal_Current < IR_AC_Signal_Previous)) {
     IR_AC_Signal_min = IR_AC_Signal_Current;
   }
-  
+
   return(beatDetected);
 }
 
@@ -144,13 +139,12 @@ int16_t averageDCEstimator(int32_t *p, uint16_t x)
 
 // Low Pass FIR Filter
 int16_t lowPassFIRFilter(int16_t din)
-{  
+{
   cbuf[offset] = din;
 
   int32_t z = mul16(FIRCoeffs[11], cbuf[(offset - 11) & 0x1F]);
-  
-  for (uint8_t i = 0 ; i < 11 ; i++)
-  {
+
+  for (uint8_t i = 0 ; i < 11 ; i++) {
     z += mul16(FIRCoeffs[i], cbuf[(offset - i) & 0x1F] + cbuf[(offset - 22 + i) & 0x1F]);
   }
 

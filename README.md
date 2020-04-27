@@ -4,8 +4,13 @@ DFRobot_MAX30102是基于MY9221SS芯片的LED驱动库，可以通过PWM调光�
 该驱动支持级联，可以将多个驱动串联，驱动可级联，每次发送一组数据并锁存后，后一个驱动会继承前一个驱动的工作状态；每次发送N组数据再锁存后可以同时控制离主控最近的N个驱动。<br>
 每个驱动最多可控制4颗RGB灯，或12颗单色灯 <br>
 getIR
+getRed
 setup
 begin
+
+available
+nextSample
+check
 ## Product Link （链接到英文商城）
     SKU：产品名称
    

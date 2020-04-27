@@ -23,7 +23,7 @@ void setup()
   //传感器初始化
   if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //Use default I2C port, 400kHz speed
   {
-    Serial.println("Failed to initialize the particle Sensor");
+    Serial.println("MAX30102 was not found");
     while (1);
   }
 
@@ -31,10 +31,10 @@ void setup()
   byte ledBrightness = 0x1F; //Options: 0=Off to 255=50mA
   byte sampleAverage = 8; //Options: 1, 2, 4, 8, 16, 32
   byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR
-  int sampleRate = 100; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
-  int pulseWidth = 411; //Options: 69, 118, 215, 411
-  int adcRange = 4096; //Options: 2048, 4096, 8192, 16384
-
+  int32_t sampleRate = 100; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
+  int32_t pulseWidth = 411; //Options: 69, 118, 215, 411
+  int32_t adcRange = 4096; //Options: 2048, 4096, 8192, 16384
+  //传感器配置
   particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange);
 
   // //Arduino绘图仪会恼人地自动缩放。为了解决这个问题，预先填充
@@ -47,7 +47,7 @@ void setup()
   // }
   // baseValue /= avgAmount;
 
-  // for (int x = 0 ; x < 500 ; x++)
+  // for (int32_t x = 0 ; x < 500 ; x++)
   //   Serial.println(baseValue);
 }
 

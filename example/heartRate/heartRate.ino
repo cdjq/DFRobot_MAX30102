@@ -39,7 +39,7 @@
 #include <Wire.h>
 #include <DFRobot_MAX30102.h>
 
-#include "heartRate.h"
+#include <heartRate.h>
 
 DFRobot_MAX30102 particleSensor;
 
@@ -49,24 +49,22 @@ byte rateSpot = 0;
 long lastBeat = 0; //Time at which the last beat occurred
 
 float beatsPerMinute;
-int beatAvg;
+int32_t beatAvg;
 
 void setup()
 {
+  //串口初始化
   Serial.begin(115200);
-  Serial.println("Initializing...");
-
-  //Initialize sensor
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //Use default I2C port, 400kHz speed
+  //传感器初始化
+  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //使用默认的I2C端口，I2C速度400kHz
   {
-    Serial.println("Failed to initialize the particle Sensor");
+    Serial.println("MAX30102 was not found");
     while (1);
   }
-  Serial.println("Place your index finger on the sensor with steady pressure.");
-
-  particleSensor.setup(); //Configure sensor with default settings
-  particleSensor.setPulseAmplitudeRed(0x0A); //Turn Red LED to low to indicate sensor is running
-  particleSensor.setPulseAmplitudeGreen(0); //Turn off Green LED
+  //传感器配置
+  particleSensor.setup(); 
+  //将红色LED调到低
+  particleSensor.setPulseAmplitudeRed(0x0A); 
 }
 
 void loop()

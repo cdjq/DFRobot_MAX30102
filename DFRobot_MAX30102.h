@@ -1,17 +1,3 @@
-/*!
- * @file DFRobot_MAX30102.h
- * @brief Define the basic structure of class DFRobot_MAX30102
- * @n 这是一个有12路引脚的LED灯，实现了下面这些功能
- * @n 控制12路单色LED灯的亮度
- * @n 控制4路带RGB引脚的LED灯闪烁、亮度和变色，支持12V电源供电的LED灯，最高承受17V
- * @n 驱动可级联，每次收到新数据会将旧数据往后传递，每次发送N组数据锁存后可控制N个驱动
- * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
- * @licence     The MIT License (MIT)
- * @author [YeHangYu](hangyu.ye@dfrobot.com)
- * @version  V1.0
- * @date  2020-04-24
- * @https://github.com/DFRobot/DFRobot_MAX30102
- */
 #ifndef _DFROBOT_MAX30102_H
 #define _DFROBOT_MAX30102_H
 
