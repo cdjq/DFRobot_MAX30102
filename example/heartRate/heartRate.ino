@@ -56,13 +56,13 @@ void setup()
   //串口初始化
   Serial.begin(115200);
   //传感器初始化
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //使用默认的I2C端口，I2C速度400kHz
+  if (!particleSensor.begin(/*&wirePort=*/Wire, /*i2cSpeed=*/I2C_SPEED_FAST)) {//使用默认的I2C端口，I2C速度400kHz
   {
     Serial.println("MAX30102 was not found");
     while (1);
   }
   //传感器配置
-  particleSensor.setup(); 
+  particleSensor.setup(); //使用默认配置
   //将红色LED调到低
   particleSensor.setPulseAmplitudeRed(0x0A); 
 }

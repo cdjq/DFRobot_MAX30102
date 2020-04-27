@@ -50,8 +50,7 @@ void setup()
   //串口初始化
   Serial.begin(115200); 
   //传感器初始化
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //使用默认的I2C端口，I2C速度400kHz
-  {
+  if (!particleSensor.begin(/*&wirePort=*/Wire, /*i2cSpeed=*/I2C_SPEED_FAST)) {//使用默认的I2C端口，I2C速度400kHz
     Serial.println(F("MAX30102 was not found"));
     while (1);
   }
@@ -85,8 +84,7 @@ int8_t heartRateValid; //indicator to show if the heart rate calculation is vali
 void loop()
 {
   //读取前100个样本，并确定信号范围
-  for (byte i = 0 ; i < 100 ; i++)
-  {
+  for (byte i = 0 ; i < 100 ; i++) {
     while (particleSensor.available() == false) {
       particleSensor.check(); //检查传感器是否有新的数据
     }

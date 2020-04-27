@@ -322,9 +322,6 @@ uint8_t DFRobot_MAX30102::getReadPointer(void)
 // }
 
 
-//
-// Device ID and Revision
-//
 uint8_t DFRobot_MAX30102::readPartID()
 {
   return readRegister8(_i2caddr, MAX30102_PARTID);

@@ -17,20 +17,17 @@
 
 DFRobot_MAX30102 particleSensor;
 
-//#define debug Serial //Uncomment this line if you're using an Uno or ESP
-////#define debug SerialUSB //Uncomment this line if you're using a SAMD21
-
 void setup()
 {
   //串口初始化
   Serial.begin(115200);
   //传感器初始化
-  if (particleSensor.begin() == false) {
+  if (particleSensor.begin() == false) {//使用默认配置
     Serial.println("MAX30102 was not found");
     while (1);
   }
   //传感器配置
-  particleSensor.setup(); //Use 6.4mA for LED drive
+  particleSensor.setup(); //使用默认配置
 }
 
 void loop()

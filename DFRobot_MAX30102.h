@@ -56,24 +56,20 @@ static const uint8_t MAX30102_DIETEMPCONFIG = 	0x21; //Die Temperature Config
 static const uint8_t MAX30102_REVISIONID = 		0xFE; //Revision ID
 static const uint8_t MAX30102_PARTID = 			0xFF; //Part ID:0x15
 
-//Interrupt configuration (pg 13, 14)
-//In SpO2 and HR modes, this interrupt triggers when the FIFO write pointer has a certain number of free spaces remaining
+//中断配置(pg 13, 14)当一个中断被触发时，MAX30102将激活的低中断引脚拉到它的低状态，直到中断被清除
+//FIFO Almost Full Flag
 static const uint8_t MAX30102_INT_A_FULL_MASK =		(byte)~0b10000000;
 static const uint8_t MAX30102_INT_A_FULL_ENABLE = 	0x80;
 static const uint8_t MAX30102_INT_A_FULL_DISABLE = 	0x00;
-//In SpO2 and HR modes, this interrupt triggers when there is a new sample in the data FIFO
+//New FIFO Data Ready
 static const uint8_t MAX30102_INT_DATA_RDY_MASK = (byte)~0b01000000;
 static const uint8_t MAX30102_INT_DATA_RDY_ENABLE =	0x40;
 static const uint8_t MAX30102_INT_DATA_RDY_DISABLE = 0x00;
-//This interrupt triggers when the ambient light cancellation function of the SpO2/HR photodiode has reached its maximum limit
+//Ambient Light Cancellation Overflow
 static const uint8_t MAX30102_INT_ALC_OVF_MASK = (byte)~0b00100000;
 static const uint8_t MAX30102_INT_ALC_OVF_ENABLE = 	0x20;
 static const uint8_t MAX30102_INT_ALC_OVF_DISABLE = 0x00;
-
-// static const uint8_t MAX30102_INT_PROX_INT_MASK = (byte)~0b00010000;
-// static const uint8_t MAX30102_INT_PROX_INT_ENABLE = 0x10;
-// static const uint8_t MAX30102_INT_PROX_INT_DISABLE = 0x00;
-
+////内部温度就绪标志
 // static const uint8_t MAX30102_INT_DIE_TEMP_RDY_MASK = (byte)~0b00000010;
 // static const uint8_t MAX30102_INT_DIE_TEMP_RDY_ENABLE = 0x02;
 // static const uint8_t MAX30102_INT_DIE_TEMP_RDY_DISABLE = 0x00;
@@ -84,7 +80,7 @@ static const uint8_t MAX30102_SAMPLEAVG_2 = 	0x20;
 static const uint8_t MAX30102_SAMPLEAVG_4 = 	0x40;
 static const uint8_t MAX30102_SAMPLEAVG_8 = 	0x60;
 static const uint8_t MAX30102_SAMPLEAVG_16 = 	0x80;
-static const uint8_t MAX30102_SAMPLEAVG_32 = 	0xA0;
+static const uint8_t MAX30102_SAMPLEAVG_32 = 	0xA0;                     
 
 static const uint8_t MAX30102_ROLLOVER_MASK = 	0xEF;
 static const uint8_t MAX30102_ROLLOVER_ENABLE = 0x10;
@@ -185,13 +181,13 @@ public:
   //Data Collection
 
   //Interrupts (page 13, 14)
-  uint8_t getINT1(void); //Returns the main interrupt group
-  uint8_t getINT2(void); //Returns the temp ready interrupt
-  void enableAFULL(void); //Enable/disable individual interrupts
+  uint8_t getINT1(void); //返回主中断组
+  uint8_t getINT2(void); //返回临时就绪中断
+  void enableAFULL(void); //在SpO2和HR模式下，当FIFO写指针有一定数量的空闲空间时，就会触发这个中断
   void disableAFULL(void);
-  void enableDATARDY(void);
+  void enableDATARDY(void);//在SpO2和HR模式下，当数据FIFO中有一个新样本时，就会触发这个中断
   void disableDATARDY(void);
-  void enableALCOVF(void);
+  void enableALCOVF(void);//当SpO2/HR光电二极管的环境光对消功能达到最大极限时，就会触发这个中断
   void disableALCOVF(void);
   // void enablePROXINT(void);
   // void disablePROXINT(void);
@@ -216,8 +212,8 @@ public:
   uint8_t getReadPointer(void);
   void clearFIFO(void); //Sets the read/write pointers to zero
 
-  //Proximity Mode Interrupt Threshold
-  void setPROXINTTHRESH(uint8_t val);
+  // //Proximity Mode Interrupt Threshold
+  // void setPROXINTTHRESH(uint8_t val);
 
   // //Die Temperature
   // float readTemperature();
@@ -228,7 +224,7 @@ public:
   uint8_t readPartID();
 
   //Setup the IC with user selectable settings
-  void setup(byte powerLevel = 0x1F, byte sampleAverage = 4, byte ledMode = 3, int sampleRate = 400, int pulseWidth = 411, int adcRange = 4096);
+  void setup(byte powerLevel = 0x1F, byte sampleAverage = 4, byte ledMode = 2, int sampleRate = 400, int pulseWidth = 411, int adcRange = 4096);
 
   //Low-level I2C communication
   uint8_t readRegister8(uint8_t address, uint8_t reg);

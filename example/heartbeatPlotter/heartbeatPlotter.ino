@@ -21,19 +21,18 @@ void setup()
   //串口初始化
   Serial.begin(115200);
   //传感器初始化
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //Use default I2C port, 400kHz speed
-  {
+  if (!particleSensor.begin(/*&wirePort=*/Wire, /*i2cSpeed=*/I2C_SPEED_FAST)) {//使用默认的I2C端口，I2C速度400kHz
     Serial.println("MAX30102 was not found");
     while (1);
   }
 
   //设置合理，使串口绘图器上有清楚的锯齿
-  byte ledBrightness = 0x1F; //Options: 0=Off to 255=50mA
-  byte sampleAverage = 8; //Options: 1, 2, 4, 8, 16, 32
-  byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR
-  int32_t sampleRate = 100; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
-  int32_t pulseWidth = 411; //Options: 69, 118, 215, 411
-  int32_t adcRange = 4096; //Options: 2048, 4096, 8192, 16384
+  byte ledBrightness = 0x1F;      //取值: 0~255，0=Off ，255=50mA
+  byte sampleAverage = 8;         //取值: 1, 2, 4, 8, 16, 32
+  byte ledMode = 2;               //取值: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green
+  int32_t sampleRate = 100;       //取值: 50, 100, 200, 400, 800, 1000, 1600, 3200
+  int32_t pulseWidth = 411;       //取值: 69, 118, 215, 411
+  int32_t adcRange = 4096;        //取值: 2048, 4096, 8192, 16384
   //传感器配置
   particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange);
 
