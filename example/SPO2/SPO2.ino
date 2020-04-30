@@ -8,7 +8,7 @@
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
  * @version  V0.1
- * @date  2020-03-20
+ * @date  2020-04-29
  * @url https://github.com/DFRobot/DFRobot_MAX30102
  */
 /*
@@ -55,15 +55,16 @@ void setup()
     while (1);
   }
 
-  byte ledBrightness = 60;  //取值: 0~255，0=Off ，255=50mA
-  byte sampleAverage = 4;   //取值: 1, 2, 4, 8, 16, 32
-  byte ledMode = 2;         //取值: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green
-  byte sampleRate = 100;    //取值: 50, 100, 200, 400, 800, 1000, 1600, 3200
-  int32_t pulseWidth = 411; //取值: 69, 118, 215, 411
-  int32_t adcRange = 4096;  //取值: 2048, 4096, 8192, 16384
+  //取值: 0~255，0=Off ，255=50mA
+   //
+  //取值: 1 = Red only, MAX30102_MODE_RED_IR = Red + IR
+  //取值: 50, 100, 200, 400, 800, 1000, 1600, 3200
+  //取值: 69, 118, 215, 411
+  //取值: 2048, 4096, 8192, 16384
 
   //传感器配置
-  particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange); //Configure sensor with these settings
+  particleSensor.setup(/*ledBrightness=*/60, /*sampleAverage=*/MAX30102_SAMPLEAVG_4, /*ledMode=*/MAX30102_MODE_RED_IR, \
+                       /*sampleRate=*/100, /*pulseWidth=*/411, /*adcRange=*/4096);
 }
 
 //Arduino Uno使用16位缓冲区存放数据
@@ -84,7 +85,7 @@ int8_t heartRateValid; //indicator to show if the heart rate calculation is vali
 void loop()
 {
   //读取前100个样本，并确定信号范围
-  for (byte i = 0 ; i < 100 ; i++) {
+  for (uint8_t i = 0 ; i < 100 ; i++) {
     while (particleSensor.available() == false) {
       particleSensor.check(); //检查传感器是否有新的数据
     }
@@ -105,14 +106,14 @@ void loop()
   while (1)
   {
     //dumping the first 25 sets of samples in the memory and shift the last 75 sets of samples to the top
-    for (byte i = 25; i < 100; i++)
+    for (uint8_t i = 25; i < 100; i++)
     {
       redBuffer[i - 25] = redBuffer[i];
       irBuffer[i - 25] = irBuffer[i];
     }
 
     //在计算心率前取25组样本
-    for (byte i = 75; i < 100; i++)
+    for (uint8_t i = 75; i < 100; i++)
     {
       while (particleSensor.available() == false) {
         particleSensor.check(); //Check the sensor for new data

@@ -8,7 +8,7 @@
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
  * @version  V0.1
- * @date  2020-03-20
+ * @date  2020-04-29
  * @url https://github.com/DFRobot/DFRobot_MAX30102
  */
 /*
@@ -43,10 +43,10 @@
 
 DFRobot_MAX30102 particleSensor;
 
-const byte RATE_SIZE = 4; //Increase this for more averaging. 4 is good.
-byte rates[RATE_SIZE]; //Array of heart rates
-byte rateSpot = 0;
-long lastBeat = 0; //Time at which the last beat occurred
+const uint8_t RATE_SIZE = 4; //Increase this for more averaging. 4 is good.
+uint8_t rates[RATE_SIZE]; //Array of heart rates
+uint8_t rateSpot = 0;
+int32_t lastBeat = 0; //Time at which the last beat occurred
 
 float beatsPerMinute;
 int32_t beatAvg;
@@ -69,24 +69,24 @@ void setup()
 
 void loop()
 {
-  long irValue = particleSensor.getIR();
+  int32_t irValue = particleSensor.getIR();
 
   if (checkForBeat(irValue) == true)
   {
     //We sensed a beat!
-    long delta = millis() - lastBeat;
+    int32_t delta = millis() - lastBeat;
     lastBeat = millis();
 
     beatsPerMinute = 60 / (delta / 1000.0);
 
     if (beatsPerMinute < 255 && beatsPerMinute > 20)
     {
-      rates[rateSpot++] = (byte)beatsPerMinute; //Store this reading in the array
+      rates[rateSpot++] = (uint8_t)beatsPerMinute; //Store this reading in the array
       rateSpot %= RATE_SIZE; //Wrap variable
 
       //Take average of readings
       beatAvg = 0;
-      for (byte x = 0 ; x < RATE_SIZE ; x++)
+      for (uint8_t x = 0 ; x < RATE_SIZE ; x++)
         beatAvg += rates[x];
       beatAvg /= RATE_SIZE;
     }

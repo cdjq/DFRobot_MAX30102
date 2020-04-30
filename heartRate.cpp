@@ -133,7 +133,7 @@ bool checkForBeat(int32_t sample)
 // Average DC Estimator
 int16_t averageDCEstimator(int32_t *p, uint16_t x)
 {
-  *p += ((((long) x << 15) - *p) >> 4);
+  *p += ((((int32_t) x << 15) - *p) >> 4);
   return (*p >> 15);
 }
 
@@ -157,5 +157,5 @@ int16_t lowPassFIRFilter(int16_t din)
 // Integer multiplier
 int32_t mul16(int16_t x, int16_t y)
 {
-  return((long)x * (long)y);
+  return((int32_t)x * (int32_t)y);
 }

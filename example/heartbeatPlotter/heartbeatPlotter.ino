@@ -7,7 +7,7 @@
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
  * @version  V0.1
- * @date  2020-03-20
+ * @date  2020-04-29
  * @url https://github.com/DFRobot/DFRobot_MAX30102
  */
 
@@ -27,27 +27,26 @@ void setup()
   }
 
   //设置合理，使串口绘图器上有清楚的锯齿
-  byte ledBrightness = 0x1F;      //取值: 0~255，0=Off ，255=50mA
-  byte sampleAverage = 8;         //取值: 1, 2, 4, 8, 16, 32
-  byte ledMode = 2;               //取值: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green
-  int32_t sampleRate = 100;       //取值: 50, 100, 200, 400, 800, 1000, 1600, 3200
-  int32_t pulseWidth = 411;       //取值: 69, 118, 215, 411
-  int32_t adcRange = 4096;        //取值: 2048, 4096, 8192, 16384
+      //取值: 0~255，0=Off ，255=50mA
+      //取值: 1, 2, 4, 8, 16, 32
+      //取值: 1 = Red only, 2 = Red + IR
+   //取值: 50, 100, 200, 400, 800, 1000, 1600, 3200
+   //取值: 69, 118, 215, 411
+   //取值: 2048, 4096, 8192, 16384
   //传感器配置
-  particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange);
+  particleSensor.setup(/*ledBrightness=*/0x1F, /*sampleAverage=*/MAX30102_SAMPLEAVG_8, /*ledMode=*/MAX30102_MODE_RED_IR, \
+                       /*sampleRate=*/100, /*pulseWidth=*/411, /*adcRange=*/4096);
 
-  // //Arduino绘图仪会恼人地自动缩放。为了解决这个问题，预先填充
-  // //从传感器得到500个读数，对IR读数进行平均，预先填充绘图仪，使Y刻度接近IR值
-  // const byte avgAmount = 64;
-  // long baseValue = 0;
-  // for (byte x = 0 ; x < avgAmount ; x++)
-  // {
-  //   baseValue += particleSensor.getIR(); //读取IR值
-  // }
-  // baseValue /= avgAmount;
+  //Arduino绘图仪会自动缩放。从传感器得到500个读数，对IR读数进行平均，预先填充绘图仪，使Y刻度接近IR值，避免绘图仪缩放
+  const uint8_t avgAmount = 64;
+  int32_t baseValue = 0;
+  for (uint8_t x = 0 ; x < avgAmount ; x++) {
+    baseValue += particleSensor.getIR(); //读取IR值
+  }
+  baseValue /= avgAmount;
 
-  // for (int32_t x = 0 ; x < 500 ; x++)
-  //   Serial.println(baseValue);
+  for (int32_t x = 0 ; x < 500 ; x++)
+    Serial.println(baseValue);
 }
 
 void loop()
