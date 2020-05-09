@@ -113,7 +113,7 @@ void maxim_heart_rate_and_oxygen_saturation(uint32_t *pun_ir_buffer, int32_t n_i
     
   // 4 pt Moving Average
   for(k=0; k< BUFFER_SIZE-MA4_SIZE; k++){
-    an_x[k]=( an_x[k]+an_x[k+1]+ an_x[k+2]+ an_x[k+3])/(int)4;        
+    an_x[k]=( an_x[k]+an_x[k+1]+ an_x[k+2]+ an_x[k+3])/(int32_t)4;        
   }
   // calculate threshold  
   n_th1=0; 

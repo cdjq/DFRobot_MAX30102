@@ -1,5 +1,5 @@
 /*!
- * @file blink.ino
+ * @file heartbeatPlotter.ino
  * @brief 在Arduino的串行绘图仪上显示用户的心跳，点击工具->“串口绘图器”，确保右下角波特率为115200
  * @n 最好用橡皮筋将传感器固定在手指上，用手按压会改变手指的血液流动，足以影响测量结果
  * @n 本示例支持的主板有ESP8266、FireBeetle-M0、UNO、ESP32、Leonardo 、Mega2560
@@ -16,41 +16,54 @@
 
 DFRobot_MAX30102 particleSensor;
 
+/*
+传感器配置中使用的宏定义选项
+sampleAverage: MAX30102_SAMPLEAVG_1 MAX30102_SAMPLEAVG_2 MAX30102_SAMPLEAVG_4 
+               MAX30102_SAMPLEAVG_8 MAX30102_SAMPLEAVG_16 MAX30102_SAMPLEAVG_32
+ledMode:       MAX30102_MODE_REDONLY  MAX30102_MODE_RED_IR  MAX30102_MODE_MULTILED
+sampleRate:    MAX30102_PULSEWIDTH_69 MAX30102_PULSEWIDTH_118 MAX30102_PULSEWIDTH_215 MAX30102_PULSEWIDTH_411
+pulseWidth:    MAX30102_SAMPLERATE_50 MAX30102_SAMPLERATE_100 MAX30102_SAMPLERATE_200 MAX30102_SAMPLERATE_400
+               MAX30102_SAMPLERATE_800 MAX30102_SAMPLERATE_1000 MAX30102_SAMPLERATE_1600 MAX30102_SAMPLERATE_3200
+adcRange:      MAX30102_ADCRANGE_2048 MAX30102_ADCRANGE_4096 MAX30102_ADCRANGE_8192 MAX30102_ADCRANGE_16384
+*/
 void setup()
 {
   //串口初始化
   Serial.begin(115200);
-  //传感器初始化
-  if (!particleSensor.begin(/*&wirePort=*/Wire, /*i2cSpeed=*/I2C_SPEED_FAST)) {//使用默认的I2C端口，I2C速度400kHz
+  /*!
+   *@brief 传感器初始化
+   *@param pWire IIC bus pointer object and construction device, can both pass or not pass parameters (Wire in default)
+   *@param i2cSpeed I2C speed (100000 in default)
+   *@param i2cAddr Chip IIC address (0x57 in default)
+   *@return true or false
+   */
+  if (!particleSensor.begin(/*&pWire=*/&Wire, /*i2cSpeed=*/I2C_SPEED_FAST)) {//使用默认的I2C端口，I2C速度400kHz
     Serial.println("MAX30102 was not found");
     while (1);
   }
 
   //设置合理，使串口绘图器上有清楚的锯齿
-      //取值: 0~255，0=Off ，255=50mA
-      //取值: 1, 2, 4, 8, 16, 32
-      //取值: 1 = Red only, 2 = Red + IR
-   //取值: 50, 100, 200, 400, 800, 1000, 1600, 3200
-   //取值: 69, 118, 215, 411
-   //取值: 2048, 4096, 8192, 16384
-  //传感器配置
-  particleSensor.setup(/*ledBrightness=*/0x1F, /*sampleAverage=*/MAX30102_SAMPLEAVG_8, /*ledMode=*/MAX30102_MODE_RED_IR, \
-                       /*sampleRate=*/100, /*pulseWidth=*/411, /*adcRange=*/4096);
-
-  //Arduino绘图仪会自动缩放。从传感器得到500个读数，对IR读数进行平均，预先填充绘图仪，使Y刻度接近IR值，避免绘图仪缩放
-  const uint8_t avgAmount = 64;
-  int32_t baseValue = 0;
-  for (uint8_t x = 0 ; x < avgAmount ; x++) {
-    baseValue += particleSensor.getIR(); //读取IR值
-  }
-  baseValue /= avgAmount;
-
-  for (int32_t x = 0 ; x < 500 ; x++)
-    Serial.println(baseValue);
+  /*!
+   *@brief 传感器配置
+   *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=Off ，255=50mA）
+   *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
+   *@param ledMode LED模式选项，默认同时使用红色传感器和红外传感器
+   *@param sampleRate 采样速率，默认每秒取400个样本
+   *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围，411(µs)
+   *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
+   */
+  particleSensor.sensorConfiguration(/*ledBrightness=*/60, /*sampleAverage=*/MAX30102_SAMPLEAVG_8, \
+                                  /*ledMode=*/MAX30102_MODE_RED_IR, /*sampleRate=*/MAX30102_SAMPLERATE_400, \
+                                  /*pulseWidth=*/MAX30102_PULSEWIDTH_411, /*adcRange=*/MAX30102_ADCRANGE_16384);
 }
 
 void loop()
 {
-  //将原始数据发送到串口，打开串口绘图工具查看
-  Serial.println(particleSensor.getIR()); 
+  while (particleSensor.available() == 0) {//计算缓冲区中可用样本数，如果读出数据则跳出循环
+    particleSensor.foundData(1); //读取数据
+  }
+  while(1) {
+    //将原始数据发送到串口，打开串口绘图工具查看
+    Serial.println(particleSensor.getIR()); 
+  }
 }
