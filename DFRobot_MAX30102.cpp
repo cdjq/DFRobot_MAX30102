@@ -2,6 +2,7 @@
  * @file DFRobot_MAX30102.h
  * @brief Define the basic structure of class DFRobot_MAX30102
  * @n 这是一个血氧饱和度和心率监测模块
+ * @n 可以采集红色传感器和红外传感器读数，温度传感器读数
  * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
@@ -408,7 +409,7 @@ bool DFRobot_MAX30102::foundData(uint8_t waitTime)
         _pWire->requestFrom(MAX30102_IIC_ADDRESS, toGet);
         while (toGet > 0) {
           senseBuf.head++;
-          senseBuf.head %= BUF_SIZE;//指向新数据的指针
+          senseBuf.head %= MAX30102_SENSE_BUF_SIZE;//指向新数据的指针
           uint8_t temp[sizeof(uint32_t)];//用一个字节的数组表示4字节的整型数
           uint32_t tempLong;
 
@@ -448,7 +449,7 @@ bool DFRobot_MAX30102::foundData(uint8_t waitTime)
 uint8_t DFRobot_MAX30102::available(void)//计算缓冲区中可用样本数
 {
   int8_t numberOfSamples = senseBuf.head - senseBuf.tail;
-  if (numberOfSamples < 0) numberOfSamples += BUF_SIZE;
+  if (numberOfSamples < 0) numberOfSamples += MAX30102_SENSE_BUF_SIZE;
   return numberOfSamples;//返回可用样本数
 }
 
@@ -456,7 +457,7 @@ void DFRobot_MAX30102::nextSample(void)//指向缓冲区中的下一个样本
 {
   if(available()) { //还有新数据
     senseBuf.tail++;
-    senseBuf.tail %= BUF_SIZE;
+    senseBuf.tail %= MAX30102_SENSE_BUF_SIZE;
   }
 }
 

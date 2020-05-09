@@ -1,3 +1,15 @@
+/*!
+ * @file DFRobot_MAX30102.h
+ * @brief Define the basic structure of class DFRobot_MAX30102
+ * @n 这是一个血氧饱和度和心率监测模块
+ * @n 可以采集红色传感器和红外传感器读数，温度传感器读数
+ * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
+ * @licence     The MIT License (MIT)
+ * @author [YeHangYu](hangyu.ye@dfrobot.com)
+ * @version  V1.0
+ * @date  2020-03-30
+ * @https://github.com/DFRobot/DFRobot_MAX30102
+ */
 #ifndef _DFROBOT_MAX30102_H
 #define _DFROBOT_MAX30102_H
 
@@ -25,9 +37,6 @@
 //I2C speed
 #define I2C_SPEED_STANDARD 100000
 #define I2C_SPEED_FAST     400000
-
-//存放传感器读数的缓冲区大小，不能小于2
-#define BUF_SIZE  10
 
 //Status Registers
 #define MAX30102_INTSTAT1        0x00//Interrupt Status1
@@ -97,6 +106,9 @@
 #define MAX30102_SLOT_NONE       0
 #define MAX30102_SLOT_RED_LED    1
 #define MAX30102_SLOT_IR_LED     2
+
+//存放传感器读数的缓冲区大小，不能小于2
+#define MAX30102_SENSE_BUF_SIZE  10
 
 class DFRobot_MAX30102
 {
@@ -208,8 +220,8 @@ public:
    *@brief 保存传感器读数的缓冲区
    */
   typedef struct {
-    uint32_t red[BUF_SIZE];
-    uint32_t IR[BUF_SIZE];
+    uint32_t red[MAX30102_SENSE_BUF_SIZE];
+    uint32_t IR[MAX30102_SENSE_BUF_SIZE];
     uint8_t head;
     uint8_t tail;
   } sSenseBuf_t;
