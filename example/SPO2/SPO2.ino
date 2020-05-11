@@ -61,7 +61,7 @@ void setup()
    *@brief 传感器配置
    *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=Off ，255=50mA）
    *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
-   *@param ledMode LED模式选项，默认同时使用红色传感器和红外传感器
+   *@param ledMode LED模式选项，默认同时使用红色和红外
    *@param sampleRate 采样速率，默认每秒取400个样本
    *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围，411(µs)
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
@@ -74,9 +74,9 @@ void setup()
   sampleCollection();
   /**
    *@brief 计算前100个样本的心率和血氧饱和度
-   *@param *pun_ir_buffer            [in]红外传感器数据缓冲区
-   *@param n_ir_buffer_length        [in]红外传感器数据缓冲区长度
-   *@param *pun_red_buffer           [in]红色传感器数据缓冲区
+   *@param *pun_ir_buffer            [in]红外数据缓冲区
+   *@param n_ir_buffer_length        [in]红外数据缓冲区长度
+   *@param *pun_red_buffer           [in]红色数据缓冲区
    *@param *pn_spo2                  [out]计算的SpO2值
    *@param *pch_spo2_valid           [out]如果计算的SpO2值是有效的，值为1
    *@param *pn_heart_rate            [out]计算的心率值

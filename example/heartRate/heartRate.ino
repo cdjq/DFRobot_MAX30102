@@ -47,7 +47,7 @@ void setup()
    *@brief 传感器配置
    *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=关 ，255=50mA）
    *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
-   *@param ledMode LED模式选项，默认同时使用红色传感器和红外传感器
+   *@param ledMode LED模式选项，默认同时使用红色和红外
    *@param sampleRate 采样速率，默认每秒取400个样本
    *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围，411(µs)
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
@@ -58,7 +58,7 @@ void setup()
 int32_t lastBeat = 0; //最近一次心跳发生的时间
 uint32_t beatsPerMinute; //每分钟心跳
 float delta; //与上一次心跳的间隔时间
-int32_t infraredValue; //红外传感器读数
+int32_t infraredValue; //红外读数
 
 void loop()
 {

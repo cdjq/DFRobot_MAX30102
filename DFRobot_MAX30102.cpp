@@ -2,7 +2,7 @@
  * @file DFRobot_MAX30102.h
  * @brief Define the basic structure of class DFRobot_MAX30102
  * @n 这是一个血氧饱和度和心率监测模块
- * @n 可以采集红色传感器和红外传感器读数，温度传感器读数
+ * @n 可以采集红色和红外读数，温度传感器读数
  * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
