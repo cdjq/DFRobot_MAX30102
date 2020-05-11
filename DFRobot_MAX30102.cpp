@@ -12,7 +12,6 @@
  */
 #include <DFRobot_MAX30102.h>
 
-
 DFRobot_MAX30102::DFRobot_MAX30102(void)
 {
 
