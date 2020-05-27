@@ -11,7 +11,6 @@
  * @url https://github.com/DFRobot/DFRobot_MAX30102
  */
 
-#include <Wire.h>
 #include <DFRobot_MAX30102.h>
 
 DFRobot_MAX30102 particleSensor;
@@ -37,7 +36,7 @@ void setup()
    *@param i2cAddr Chip IIC address (0x57 in default)
    *@return true or false
    */
-  if (!particleSensor.begin(/*&pWire=*/&Wire, /*i2cSpeed=*/I2C_SPEED_FAST)) {//使用默认的I2C端口，I2C速度400kHz
+  if (!particleSensor.begin(/*&pWire=*/&Wire, /*i2cSpeed=*/MAX30102_I2C_SPEED)) {//使用默认的I2C端口，I2C速度400kHz
     Serial.println("MAX30102 was not found");
     while (1);
   }
@@ -60,7 +59,7 @@ void setup()
 void loop()
 {
   while (particleSensor.available() == 0) {//计算缓冲区中可用样本数，如果读出数据则跳出循环
-    particleSensor.foundData(1); //读取数据
+    particleSensor.getNewData(1); //读取数据
   }
   while(1) {
     //将原始数据发送到串口，打开串口绘图工具查看

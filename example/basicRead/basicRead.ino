@@ -10,7 +10,6 @@
  * @url https://github.com/DFRobot/DFRobot_MAX30102
  */
 
-#include <Wire.h>
 #include <DFRobot_MAX30102.h>
 
 DFRobot_MAX30102 particleSensor;
@@ -56,13 +55,17 @@ void setup()
 
 void loop()
 {
-  //循环判断是否获得数据，
-  while (particleSensor.available() == 0) {//计算缓冲区中可用样本数，直到读出数据
-    particleSensor.foundData(1); //读取数据
-  }
   Serial.print("R=");
-  Serial.print(particleSensor.getRed());//获得red值，返回4字节的无符号red值
+  /*!
+   *@brief 获得red值
+   *@return 4字节红光读数
+   */
+  Serial.print(particleSensor.getRed());
   Serial.print(" IR=");
+  /*!
+   *@brief 获得IR值
+   *@return 4字节红外光读数
+   */
   Serial.print(particleSensor.getIR());
   Serial.println();
 }

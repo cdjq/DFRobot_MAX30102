@@ -11,25 +11,9 @@
  * @url https://github.com/DFRobot/DFRobot_MAX30102
  */
 
-#include <Wire.h>
 #include <DFRobot_MAX30102.h>
-#include <spo2_algorithm.h>
 
 DFRobot_MAX30102 particleSensor;
-
-//Arduino Uno使用16位缓冲区存放数据
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
-uint16_t irBuffer[100];
-uint16_t redBuffer[100];
-#else
-uint32_t irBuffer[100];
-uint32_t redBuffer[100];
-#endif
-int32_t bufferLength = 100;//100的缓冲区长度存储4秒样本
-int32_t spo2; //血氧浓度
-int8_t validSPO2; //显示SPO2计算是否有效的标志
-int32_t heartRate; //心率
-int8_t heartRateValid; //显示心率计算是否有效的标志
 
 /*
 传感器配置中使用的宏定义选项
@@ -52,7 +36,7 @@ void setup()
    *@param i2cAddr Chip IIC address (0x57 in default)
    *@return true or false
    */
-  if (!particleSensor.begin(/*&pWire=*/&Wire, /*i2cSpeed=*/I2C_SPEED_FAST)) {//使用默认的I2C端口，I2C速度400kHz
+  if (!particleSensor.begin(/*&pWire=*/&Wire, /*i2cSpeed=*/MAX30102_I2C_SPEED)) {//使用默认的I2C端口，I2C速度400kHz
     Serial.println(F("MAX30102 was not found"));
     while (1);
   }
@@ -69,75 +53,23 @@ void setup()
   particleSensor.sensorConfiguration(/*ledBrightness=*/50, /*sampleAverage=*/MAX30102_SAMPLEAVG_4, \
                         /*ledMode=*/MAX30102_MODE_RED_IR, /*sampleRate=*/MAX30102_SAMPLERATE_100, \
                         /*pulseWidth=*/MAX30102_PULSEWIDTH_411, /*adcRange=*/MAX30102_ADCRANGE_16384);
-
-  //采集100个样本
-  sampleCollection();
-  /**
-   *@brief 计算前100个样本的心率和血氧饱和度
-   *@param *pun_ir_buffer            [in]红外数据缓冲区
-   *@param n_ir_buffer_length        [in]红外数据缓冲区长度
-   *@param *pun_red_buffer           [in]红色数据缓冲区
-   *@param *pn_spo2                  [out]计算的SpO2值
-   *@param *pch_spo2_valid           [out]如果计算的SpO2值是有效的，值为1
-   *@param *pn_heart_rate            [out]计算的心率值
-   *@param *pch_hr_valid             [out]如果计算出的心率值是有效的，值为1
-   */
-  maxim_heart_rate_and_oxygen_saturation(/**pun_ir_buffer=*/irBuffer, /*n_ir_buffer_length=*/bufferLength, /**pun_red_buffer=*/redBuffer, \
-      /**pn_spo2=*/&spo2, /**pch_spo2_valid=*/&validSPO2, /**pn_heart_rate=*/&heartRate, /**pch_hr_valid=*/&heartRateValid);
 }
+
+int32_t SPO2; //血氧浓度
+int8_t SPO2Valid; //显示SPO2计算是否有效的标志
+int32_t heartRate; //心率
+int8_t heartRateValid; //显示心率计算是否有效的标志
 
 void loop()
 {
-  //更新样本
-  sampleUpdate();
-  maxim_heart_rate_and_oxygen_saturation(/**pun_ir_buffer=*/irBuffer, /*n_ir_buffer_length=*/bufferLength, /**pun_red_buffer=*/redBuffer, \
-      /**pn_spo2=*/&spo2, /**pch_spo2_valid=*/&validSPO2, /**pn_heart_rate=*/&heartRate, /**pch_hr_valid=*/&heartRateValid);
-  Serial.print(F("HeartRate="));
+  particleSensor.heartrateAndOxygenSaturation(/**SPO2=*/&SPO2, /**SPO2Valid=*/&SPO2Valid, /**heartRate=*/&heartRate, /**heartRateValid=*/&heartRateValid);
+
+  Serial.print(F("heartRate="));
   Serial.print(heartRate, DEC);
   Serial.print(F(", heartRateValid="));
   Serial.print(heartRateValid, DEC);
   Serial.print(F("; SPO2="));
-  Serial.print(spo2, DEC);
+  Serial.print(SPO2, DEC);
   Serial.print(F(", SPO2Valid="));
-  Serial.println(validSPO2, DEC);
-}
-
-
-void sampleCollection()
-{
-//打开串口后等待一段时间，确保手指已经固定好，才能开始采样
-  Serial.println("Please put your finger on the sensor and wait a moment");
-  delay(5000);
-
-  //读取100个样本
-  for (uint8_t i = 0 ; i < 100 ; i++) {
-    while (particleSensor.available() == 0) {//计算缓冲区中可用样本数，如果读出数据则跳出循环
-      particleSensor.foundData(1); //读取数据，存放在缓冲区
-    }
-    redBuffer[i] = particleSensor.getFIFORed();
-    irBuffer[i] = particleSensor.getFIFOIR();
-    particleSensor.nextSample();
-    // Serial.print(F("red="));
-    // Serial.print(redBuffer[i], DEC);
-    // Serial.print(F(", ir="));
-    // Serial.println(irBuffer[i], DEC);
-  }
-}
-
-void sampleUpdate()
-{
-  //将75组样本前移
-  for (uint8_t i = 25; i < 100; i++) {
-    redBuffer[i - 25] = redBuffer[i];
-    irBuffer[i - 25] = irBuffer[i];
-  }
-  //采集25组新样本，放在末尾
-  for (uint8_t i = 75; i < 100; i++) {
-    while (particleSensor.available() == 0) {
-      particleSensor.foundData(1); 
-    }
-    redBuffer[i] = particleSensor.getFIFORed();
-    irBuffer[i] = particleSensor.getFIFOIR();
-    particleSensor.nextSample();
-  }
+  Serial.println(SPO2Valid, DEC);
 }

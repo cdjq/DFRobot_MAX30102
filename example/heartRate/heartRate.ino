@@ -11,7 +11,6 @@
  * @url https://github.com/DFRobot/DFRobot_MAX30102
  */
 
-#include <Wire.h>
 #include <DFRobot_MAX30102.h>
 
 #include <heartRate.h>
@@ -39,7 +38,7 @@ void setup()
    *@param i2cAddr Chip IIC address (0x57 in default)
    *@return true or false
    */
-  if (!particleSensor.begin(/*&pWire=*/&Wire, /*i2cSpeed=*/I2C_SPEED_FAST)) {//使用默认的I2C端口，I2C速度400kHz
+  if (!particleSensor.begin(/*&pWire=*/&Wire, /*i2cSpeed=*/MAX30102_I2C_SPEED)) {//使用默认的I2C端口，I2C速度400kHz
     Serial.println("MAX30102 was not found");
     while (1);
   }

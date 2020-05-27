@@ -28,8 +28,12 @@ bool DFRobot_MAX30102::begin(TwoWire *pWire, uint32_t i2cSpeed, uint8_t i2cAddr)
     // 读取的part ID与预期的part ID不匹配。
     return false;
   }
+  //复位
+  softReset();
   return true;
 }
+
+///状态相关配置
 
 void DFRobot_MAX30102::enableAlmostFull(void)
 {
@@ -97,12 +101,12 @@ void DFRobot_MAX30102::softReset(void)
   readReg(MAX30102_MODECONFIG, &modeReg, 1);
   modeReg.reset = 1;
   writeReg(MAX30102_MODECONFIG, &modeReg, 1);
-  //循环等待传感器回应，直到复位变回0，才算完成重置，超时100ms自动退出
+  //循环等待传感器回应，直到复位变回0，才算完成重置
   uint32_t startTime = millis();
   while (millis() - startTime < 100) {
     readReg(MAX30102_MODECONFIG, &modeReg, 1);
     if (modeReg.reset == 0) break; //完成
-    delay(1); //不要让I2C总线负担过重
+    delay(1);
   }
 }
 
@@ -193,7 +197,7 @@ void DFRobot_MAX30102::disableAllSlots(void)
   writeReg(MAX30102_MULTILEDCONFIG1, &multiLEDReg, 1);
 }
 
-void DFRobot_MAX30102::clearFIFO(void)
+void DFRobot_MAX30102::resetFIFO(void)
 {
   uint8_t byteTemp = 0;
   writeReg(MAX30102_FIFOWRITEPTR, &byteTemp, 1);
@@ -214,7 +218,7 @@ uint8_t DFRobot_MAX30102::getReadPointer(void)//得到FIFO读指针
   return byteTemp;
 }
 
-/// FIFO Configuration
+///FIFO配置
 
 void DFRobot_MAX30102::setFIFOAverage(uint8_t numberOfSamples)
 {
@@ -248,38 +252,35 @@ void DFRobot_MAX30102::setFIFOAlmostFull(uint8_t numberOfSamples)//样本数设�
   writeReg(MAX30102_FIFOCONFIG, &FIFOReg, 1);
 }
 
-/// Die Temperature
+///获取温度
 
-float DFRobot_MAX30102::readTemperature()//返回温度用摄氏度表示
+float DFRobot_MAX30102::readTemperatureC()//返回温度用摄氏度表示
 {
-  // Config die temperature register to take 1 temperature sample
+  //使能
   uint8_t byteTemp = 0x01;
   writeReg(MAX30102_DIETEMPCONFIG, &byteTemp, 1);
-  //循环等待传感器回应
+  //循环等待传感器回应，确保已经使能后才开始读
   uint32_t startTime = millis();
-  while (millis() - startTime < 100) { //超时时间100ms
-    uint8_t response;
-    readReg(MAX30102_DIETEMPCONFIG, &response, 1);
-    if ((response & 0x01) == 0) break; //完成
+  while (millis() - startTime < 100) { //超时时间
+    readReg(MAX30102_DIETEMPCONFIG, &byteTemp, 1);
+    if ((byteTemp & 0x01) == 0) break; //完成
     delay(1);
   }
 
-  // Read die temperature register
+  //读出模具温度整数部分
   uint8_t tempInt;
   readReg(MAX30102_DIETEMPINT, &tempInt, 1);
+  //读出模具温度小数部分
   uint8_t tempFrac;
   readReg(MAX30102_DIETEMPFRAC, &tempFrac, 1);
 
-  // Calculate temperature (datasheet pg. 23)
   return (float)tempInt + ((float)tempFrac * 0.0625);
 }
 
 float DFRobot_MAX30102::readTemperatureF()
 {
-  float temp = readTemperature();
-
+  float temp = readTemperatureC();
   if (temp != -999.0) temp = temp * 1.8 + 32.0;
-
   return (temp);
 }
 
@@ -293,95 +294,56 @@ uint8_t DFRobot_MAX30102::readPartID()
 
 void DFRobot_MAX30102::sensorConfiguration(uint8_t ledBrightness, uint8_t sampleAverage, uint8_t ledMode, uint8_t sampleRate, uint8_t pulseWidth, uint8_t adcRange)
 {
-  softReset();
-  //FIFO Configuration
+  /*FIFO设置*/
   //设置芯片将多个样本平均
-  if (sampleAverage == MAX30102_SAMPLEAVG_1) setFIFOAverage(MAX30102_SAMPLEAVG_1); //不求平均值
-  else if (sampleAverage == MAX30102_SAMPLEAVG_2) setFIFOAverage(MAX30102_SAMPLEAVG_2);
-  else if (sampleAverage == MAX30102_SAMPLEAVG_4) setFIFOAverage(MAX30102_SAMPLEAVG_4);
-  else if (sampleAverage == MAX30102_SAMPLEAVG_8) setFIFOAverage(MAX30102_SAMPLEAVG_8);
-  else if (sampleAverage == MAX30102_SAMPLEAVG_16) setFIFOAverage(MAX30102_SAMPLEAVG_16);
-  else if (sampleAverage == MAX30102_SAMPLEAVG_32) setFIFOAverage(MAX30102_SAMPLEAVG_32);
-  else setFIFOAverage(MAX30102_SAMPLEAVG_4);
+  setFIFOAverage(sampleAverage);
 
-  //setFIFOAlmostFull(2); //设置为30个样本来触发一个'Almost Full'中断
-  enableFIFORollover(); //启用FIFO满时，自动归零
-
-  //Mode Configuration
-  if (ledMode == MAX30102_MODE_MULTILED) {
-    setLEDMode(MAX30102_MODE_MULTILED);
-    activeLEDs = 2;
-  } else if (ledMode == MAX30102_MODE_RED_IR) {
-    setLEDMode(MAX30102_MODE_RED_IR);
-    activeLEDs = 2;
-  } else {
-    setLEDMode(MAX30102_MODE_REDONLY);
-    activeLEDs = 1;
-  }
-
-  //Particle Sensing Configuration
-  if(adcRange < MAX30102_ADCRANGE_4096) setADCRange(MAX30102_ADCRANGE_2048); //7.81pA per LSB
-  else if(adcRange < MAX30102_ADCRANGE_8192) setADCRange(MAX30102_ADCRANGE_4096); //15.63pA per LSB
-  else if(adcRange < MAX30102_ADCRANGE_16384) setADCRange(MAX30102_ADCRANGE_8192); //31.25pA per LSB
-  else if(adcRange == MAX30102_ADCRANGE_16384) setADCRange(MAX30102_ADCRANGE_16384); //62.5pA per LSB
-  else setADCRange(MAX30102_ADCRANGE_2048);
-
-  if (sampleRate < MAX30102_SAMPLERATE_100) setSampleRate(MAX30102_SAMPLERATE_50); //每秒取50个样本
-  else if (sampleRate < MAX30102_SAMPLERATE_200) setSampleRate(MAX30102_SAMPLERATE_100);
-  else if (sampleRate < MAX30102_SAMPLERATE_400) setSampleRate(MAX30102_SAMPLERATE_200);
-  else if (sampleRate < MAX30102_SAMPLERATE_800) setSampleRate(MAX30102_SAMPLERATE_400);
-  else if (sampleRate < MAX30102_SAMPLERATE_1000) setSampleRate(MAX30102_SAMPLERATE_800);
-  else if (sampleRate < MAX30102_SAMPLERATE_1600) setSampleRate(MAX30102_SAMPLERATE_1000);
-  else if (sampleRate < MAX30102_SAMPLERATE_3200) setSampleRate(MAX30102_SAMPLERATE_1600);
-  else if (sampleRate == MAX30102_SAMPLERATE_3200) setSampleRate(MAX30102_SAMPLERATE_3200);
-  else setSampleRate(MAX30102_SAMPLERATE_50);
-
+  /*传感器相关设置*/
+  setADCRange(adcRange);
+  //每秒取样本数
+  setSampleRate(sampleRate);
   //脉冲宽度越长，探测范围就越大，在69us 0.4mA时，大约2英寸，在411us 0.4mA时，大约6英寸
-  if (pulseWidth < MAX30102_PULSEWIDTH_118) setPulseWidth(MAX30102_PULSEWIDTH_69);
-  else if (pulseWidth < MAX30102_PULSEWIDTH_215) setPulseWidth(MAX30102_PULSEWIDTH_118);
-  else if (pulseWidth < MAX30102_PULSEWIDTH_411) setPulseWidth(MAX30102_PULSEWIDTH_215);
-  else if (pulseWidth == MAX30102_PULSEWIDTH_411) setPulseWidth(MAX30102_PULSEWIDTH_411);
-  else setPulseWidth(MAX30102_PULSEWIDTH_69);
-
-  //LED亮度配置
+  setPulseWidth(pulseWidth);
+  //LED亮度
   setPulseAmplitudeRed(ledBrightness);
   setPulseAmplitudeIR(ledBrightness);
   //每个样本被分割成四个时间槽，SLOT1~SLOT4，根据设置的LED模式启用槽
   enableSlot(1, MAX30102_SLOT_RED_LED);//将Slot1的RED设置为活动
   if (ledMode > MAX30102_MODE_REDONLY) enableSlot(2, MAX30102_SLOT_IR_LED);//将Slot2的IR设置为活动
 
-  clearFIFO(); //重置FIFO，准备之后的读数
+  /*模式设置*/
+  if (ledMode == MAX30102_MODE_REDONLY) {
+    setLEDMode(ledMode);
+    activeLEDs = 1;
+  } else {
+    setLEDMode(ledMode);
+    activeLEDs = 2;
+  }
+
+  enableFIFORollover(); //启用FIFO满时，自动归零
+  resetFIFO(); //重置FIFO，准备之后的读数
 }
 
 ///获取数据
 
 uint32_t DFRobot_MAX30102::getRed(void)
 {
-  if(foundData(250)) //花费250ms找数据
-    return (senseBuf.red[senseBuf.head]);
-  else
-    return 0; //没有发现数据
+  getNewData(); //得到数据
+  return (senseBuf.red[senseBuf.head]);
 }
 
 uint32_t DFRobot_MAX30102::getIR(void)
 {
-  if(foundData(250)) //花费250ms找数据
-    return (senseBuf.IR[senseBuf.head]);
-  else
-    return 0; //没有发现数据
+  getNewData(); //得到数据
+  return (senseBuf.IR[senseBuf.head]);
 }
 
-//循环获取新数据
-//如果有新的数据可用，将更新结构体中的head和tail
-//返回发现的的新样本数
-bool DFRobot_MAX30102::foundData(uint8_t waitTime)
+void DFRobot_MAX30102::getNewData(void)//循环获取新数据
 {
-  //循环等待传感器回应
-  uint8_t startTime = millis();
-  while(millis() - startTime > waitTime) {
+  int32_t numberOfSamples = 0;
+  while (numberOfSamples == 0) {//缓冲区有可用样本后，才会返回
     uint8_t readPointer = getReadPointer();//读取FIFO读指针
     uint8_t writePointer = getWritePointer();
-    int32_t numberOfSamples = 0;
     //读取寄存器数据直到FIFO_RD_PTR = FIFO_WR_PTR
     if (readPointer != writePointer) {
       //计算我们需要从传感器获得的读数数量
@@ -391,26 +353,24 @@ bool DFRobot_MAX30102::foundData(uint8_t waitTime)
       //有了读取的数量，现在需要读取的字节，对于本例，我们只使用Red和IR(各3个字节)
       int32_t bytesLeftToRead = numberOfSamples * activeLEDs * 3;
 
-      //准备从FIFO寄存器读取一组数据
       _pWire->beginTransmission(MAX30102_IIC_ADDRESS);
       _pWire->write(MAX30102_FIFODATA);
       _pWire->endTransmission();
 
-      //可能需要读取多达288字节的数据，块的大小不能大于I2C_BUFFER_LENGTH，需要读多次
       while (bytesLeftToRead > 0) {
-        int32_t toGet = bytesLeftToRead;
-        if (toGet > I2C_BUFFER_LENGTH) {
-          //如果一次读取6个字节（red和IR各3字节），因此必须进行取余，抛弃剩下的几个字节
-          toGet = I2C_BUFFER_LENGTH - (I2C_BUFFER_LENGTH % (activeLEDs * 3));
+        int32_t bytesNeedToRead = bytesLeftToRead;
+        if (bytesNeedToRead > I2C_BUFFER_LENGTH) {
+          //抛弃剩下的几个字节，完整样本
+          bytesNeedToRead = I2C_BUFFER_LENGTH - (I2C_BUFFER_LENGTH % (activeLEDs * 3));
         }
-        bytesLeftToRead -= toGet;
+        bytesLeftToRead -= bytesNeedToRead;
         //从传感器获取相应字节数
-        _pWire->requestFrom(MAX30102_IIC_ADDRESS, toGet);
-        while (toGet > 0) {
+        _pWire->requestFrom(MAX30102_IIC_ADDRESS, bytesNeedToRead);
+        while (bytesNeedToRead > 0) {
           senseBuf.head++;
           senseBuf.head %= MAX30102_SENSE_BUF_SIZE;//指向新数据的指针
           uint8_t temp[sizeof(uint32_t)];//用一个字节的数组表示4字节的整型数
-          uint32_t tempLong;
+          uint32_t tempLength;
 
           //读3个字节，对应RED
           temp[3] = 0;
@@ -418,9 +378,9 @@ bool DFRobot_MAX30102::foundData(uint8_t waitTime)
           temp[1] = _pWire->read();
           temp[0] = _pWire->read();
           //转换为uint32_t
-          memcpy(&tempLong, temp, sizeof(tempLong));
-          tempLong &= 0x3FFFF; //3字节有效
-          senseBuf.red[senseBuf.head] = tempLong;
+          memcpy(&tempLength, temp, sizeof(tempLength));
+          tempLength &= 0x3FFFF; //3字节有效
+          senseBuf.red[senseBuf.head] = tempLength;
 
           if (activeLEDs > 1) { //如果启用了IR
             //再读3个字节，对应IR
@@ -429,20 +389,17 @@ bool DFRobot_MAX30102::foundData(uint8_t waitTime)
             temp[1] = _pWire->read();
             temp[0] = _pWire->read();
             //转换为uint32_t
-            memcpy(&tempLong, temp, sizeof(tempLong));
-            tempLong &= 0x3FFFF; //3字节有效
-            senseBuf.IR[senseBuf.head] = tempLong;
+            memcpy(&tempLength, temp, sizeof(tempLength));
+            tempLength &= 0x3FFFF; //3字节有效
+            senseBuf.IR[senseBuf.head] = tempLength;
           }
-          toGet -= activeLEDs * 3;
+          bytesNeedToRead -= activeLEDs * 3;
         }
       }
     }
-    if(numberOfSamples != 0) {
-      return true;//找到新数据
-    }
+    DBG("fifo no data");
     delay(1);
   }
-  return false;//超时
 }
 
 uint8_t DFRobot_MAX30102::available(void)//计算缓冲区中可用样本数
@@ -460,14 +417,37 @@ void DFRobot_MAX30102::nextSample(void)//指向缓冲区中的下一个样本
   }
 }
 
-uint32_t DFRobot_MAX30102::getFIFORed(void)
+void DFRobot_MAX30102::heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Valid,int32_t* heartRate,int8_t* heartRateValid)
 {
-  return (senseBuf.red[senseBuf.tail]);
-}
+  //Arduino Uno使用16位缓冲区存放数据
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
+  uint16_t irBuffer[100];
+  uint16_t redBuffer[100];
+#else
+  uint32_t irBuffer[100];
+  uint32_t redBuffer[100];
+#endif
+  int32_t bufferLength = 100;
 
-uint32_t DFRobot_MAX30102::getFIFOIR(void)
-{
-  return (senseBuf.IR[senseBuf.tail]);
+  for (uint8_t i = 0 ; i < bufferLength ; i++) {
+    getNewData(); //读取数据，存放在缓冲区
+    redBuffer[i] = senseBuf.red[senseBuf.tail];//由tail指向的样本是新样本
+    irBuffer[i] = senseBuf.IR[senseBuf.tail];
+    nextSample();
+  }
+
+  /**
+   *@brief 计算bufferLength个样本的心率和血氧饱和度
+   *@param *pun_ir_buffer            [in]红外数据缓冲区
+   *@param n_ir_buffer_length        [in]红外数据缓冲区长度
+   *@param *pun_red_buffer           [in]红色数据缓冲区
+   *@param *pn_spo2                  [out]计算的SpO2值
+   *@param *pch_spo2_valid           [out]如果计算的SpO2值是有效的，值为1
+   *@param *pn_heart_rate            [out]计算的心率值
+   *@param *pch_hr_valid             [out]如果计算出的心率值是有效的，值为1
+   */
+  maxim_heart_rate_and_oxygen_saturation(/**pun_ir_buffer=*/irBuffer, /*n_ir_buffer_length=*/bufferLength, /**pun_red_buffer=*/redBuffer, \
+      /**pn_spo2=*/SPO2, /**pch_spo2_valid=*/SPO2Valid, /**pn_heart_rate=*/heartRate, /**pch_hr_valid=*/heartRateValid);
 }
 
 void DFRobot_MAX30102::writeReg(uint8_t reg, const void* pBuf, uint8_t size)

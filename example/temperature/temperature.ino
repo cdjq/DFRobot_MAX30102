@@ -10,7 +10,6 @@
  * @url https://github.com/DFRobot/DFRobot_MAX30102
  */
 
-#include <Wire.h>
 #include <DFRobot_MAX30102.h>
 
 
@@ -55,12 +54,9 @@ void setup()
 
 void loop()
 {
-  float temperature = particleSensor.readTemperature();
   Serial.print("temperatureC=");
-  Serial.print(temperature, 4);
-
-  float temperatureF = particleSensor.readTemperatureF();
+  Serial.print(particleSensor.readTemperatureC());
   Serial.print(" temperatureF=");
-  Serial.print(temperatureF, 4);
+  Serial.print(particleSensor.readTemperatureF());
   Serial.println();
 }

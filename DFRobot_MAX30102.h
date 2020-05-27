@@ -15,9 +15,10 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <spo2_algorithm.h>
 
 //Open this macro to see the detailed running process of the program
-#define ENABLE_DBG 0
+// #define ENABLE_DBG 
 #ifdef ENABLE_DBG
 #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
@@ -35,8 +36,7 @@
 #define I2C_BUFFER_LENGTH 32
 #endif
 //I2C speed
-#define I2C_SPEED_STANDARD 100000
-#define I2C_SPEED_FAST     400000
+#define MAX30102_I2C_SPEED     400000
 
 //Status Registers
 #define MAX30102_INTSTAT1        0x00//Interrupt Status1
@@ -77,11 +77,13 @@
 #define MAX30102_SAMPLEAVG_8     3
 #define MAX30102_SAMPLEAVG_16    4
 #define MAX30102_SAMPLEAVG_32    5
+
 //Mode configuration(寄存器地址0x09)
 //ledMode(Table 4. Mode Control)
 #define MAX30102_MODE_REDONLY    2
 #define MAX30102_MODE_RED_IR     3
 #define MAX30102_MODE_MULTILED   7
+
 //Particle sensing configuration(寄存器地址0x0A)
 //adcRange(Table 5. SpO2 ADC Range Control)
 #define MAX30102_ADCRANGE_2048   0
@@ -102,6 +104,7 @@
 #define MAX30102_PULSEWIDTH_118  1
 #define MAX30102_PULSEWIDTH_215  2
 #define MAX30102_PULSEWIDTH_411  3
+
 //Multi-LED Mode Control Registers(寄存器地址0x011)
 #define MAX30102_SLOT_NONE       0
 #define MAX30102_SLOT_RED_LED    1
@@ -217,7 +220,7 @@ public:
   } __attribute__ ((packed)) sMultiLED_t;
 
   /*!
-   *@brief 保存传感器读数的缓冲区
+   *@brief 保存传感器FIFO中样本的缓冲区
    */
   typedef struct {
     uint32_t red[MAX30102_SENSE_BUF_SIZE];
@@ -240,7 +243,20 @@ public:
    *@param i2cAddr Chip IIC address (0x57 in default)
    *@return true or false
    */
-  bool begin(TwoWire *pWire = &Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2cAddr = MAX30102_IIC_ADDRESS);
+  bool begin(TwoWire *pWire = &Wire, uint32_t i2cSpeed = MAX30102_I2C_SPEED, uint8_t i2cAddr = MAX30102_IIC_ADDRESS);
+
+  /*!
+   *@brief 传感器配置
+   *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=Off ，255=50mA）
+   *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
+   *@param ledMode LED模式选项，默认同时使用红色和红外
+   *@param sampleRate 采样速率，默认每秒取400个样本
+   *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围，411(µs)
+   *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
+   */
+  void sensorConfiguration(uint8_t ledBrightness = 0x1F, uint8_t sampleAverage = MAX30102_SAMPLEAVG_4, \
+                           uint8_t ledMode = MAX30102_MODE_RED_IR, uint8_t sampleRate = MAX30102_SAMPLERATE_400, \
+                           uint8_t pulseWidth = MAX30102_PULSEWIDTH_411, uint8_t adcRange = MAX30102_ADCRANGE_4096);
 
   /*!
    *@brief 所有配置、阈值和数据寄存器复位。复位完成后，复位位自动清零
@@ -258,11 +274,46 @@ public:
   void wakeUp();
 
   /*!
+   *@brief 获得red值
+   *@return 4字节红光读数
+   */
+  uint32_t getRed(void);
+
+  /*!
+   *@brief 获得IR值
+   *@return 4字节红外光读数
+   */
+  uint32_t getIR(void);
+
+  /*!
+   *@brief 获取模块温度，单位是摄氏度
+   *@return 浮点型温度值
+   */
+  float readTemperatureC();
+
+  /*!
+   *@brief 获取模块温度，单位是华氏度
+   *@return 浮点型温度值
+   */
+  float readTemperatureF();
+
+  /*!
+   *@brief 计算心率和血氧饱和度
+   *@param *SPO2                  [out]计算的SpO2值
+   *@param *SPO2Valid             [out]如果计算的SpO2值是有效的，值为1
+   *@param *heartRate             [out]计算的心率值
+   *@param *heartRateValid        [out]如果计算出的心率值是有效的，值为1
+   */
+  void heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Valid,int32_t* heartRate,int8_t* heartRateValid);
+
+private:
+
+  /*!
    *@brief 设置LED模式
    *@param mode 模式使用宏定义ledMode中的选项进行配置
    */
   void setLEDMode(uint8_t mode);
-
+  
   /*!
    *@brief 设置ADC量程，默认4096 (nA)，15.63(pA) per LSB
    *@param adcRange ADC量程使用注释有adcRange的宏定义进行配置
@@ -368,59 +419,9 @@ public:
   void setFIFOAlmostFull(uint8_t numberOfSamples);
 
   /*!
-   *@brief 传感器配置
-   *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=Off ，255=50mA）
-   *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
-   *@param ledMode LED模式选项，默认同时使用红色和红外
-   *@param sampleRate 采样速率，默认每秒取400个样本
-   *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围，411(µs)
-   *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
+   *@brief 读取芯片ID
    */
-  void sensorConfiguration(uint8_t ledBrightness = 0x1F, uint8_t sampleAverage = MAX30102_SAMPLEAVG_4, \
-                           uint8_t ledMode = MAX30102_MODE_RED_IR, uint8_t sampleRate = MAX30102_SAMPLERATE_400, \
-                           uint8_t pulseWidth = MAX30102_PULSEWIDTH_411, uint8_t adcRange = MAX30102_ADCRANGE_4096);
-
-  /*!
-   *@brief 获得red值
-   *@return 4字节红色读数
-   */
-  uint32_t getRed(void);
-
-  /*!
-   *@brief 获得IR值
-   *@return 4字节红外读数
-   */
-  uint32_t getIR(void);
-
-  /*!
-   *@brief 在给定的时间范围里，读取新数据并保存在储存结构体里
-   *@param waitTime 最长等待时间
-   *@return 发现新数据返回true，没有数据返回false
-   */
-  bool foundData(uint8_t waitTime);
-
-  /*!
-   *@brief 计算缓冲区中可用样本数
-   *@return 1字节可用样本数
-   */
-  uint8_t available(void);
-
-  /*!
-   *@brief 指向缓冲区中的下一个样本
-   */
-  void nextSample(void);
-
-  /*!
-   *@brief 返回由tail指向的FIFO样本
-   *@return 4字节红色读数
-   */
-  uint32_t getFIFORed(void);
-
-  /*!
-   *@brief 返回由tail指向的FIFO样本
-   *@return 4字节红外读数
-   */
-  uint32_t getFIFOIR(void);
+  uint8_t readPartID();
 
   /*!
    *@brief 得到FIFO写指针
@@ -435,28 +436,26 @@ public:
   uint8_t getReadPointer(void);
 
   /*!
-   *@brief 将FIFO读/写指针等设置为零
+   *@brief 重置FIFO
    */
-  void clearFIFO(void);
+  void resetFIFO(void);
 
   /*!
-   *@brief 获取模块温度，单位是摄氏度
-   *@return 浮点型温度值
+   *@brief 读取新数据并保存在结构体缓冲区
    */
-  float readTemperature();
+  void getNewData(void);
 
   /*!
-   *@brief 获取模块温度，单位是华氏度
-   *@return 浮点型温度值
+   *@brief 计算缓冲区中可用样本数
+   *@return 1字节可用样本数
    */
-  float readTemperatureF();
+  uint8_t available(void);
 
   /*!
-   *@brief 读取芯片ID
+   *@brief 指向缓冲区中的下一个样本
    */
-  uint8_t readPartID();
+  void nextSample(void);
 
-private:
   void writeReg(uint8_t reg, const void* pBuf, uint8_t size);
   uint8_t readReg(uint8_t reg, const void* pBuf, uint8_t size);
 
