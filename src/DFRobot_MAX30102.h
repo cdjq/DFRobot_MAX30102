@@ -15,10 +15,12 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include <spo2_algorithm.h>
+#include <SPO2/algorithm.h>
+#include <PBA/heartRate.h>
 
 //Open this macro to see the detailed running process of the program
-// #define ENABLE_DBG 
+// #define ENABLE_DBG
+
 #ifdef ENABLE_DBG
 #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
@@ -462,7 +464,7 @@ private:
 private:
   TwoWire *_pWire;
   uint8_t _i2cAddr;
-  uint8_t activeLEDs;
+  uint8_t _activeLEDs;
   sSenseBuf_t senseBuf;//存放多组数据的缓冲区
 };
 

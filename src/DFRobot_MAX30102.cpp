@@ -26,6 +26,7 @@ bool DFRobot_MAX30102::begin(TwoWire *pWire, uint32_t i2cSpeed, uint8_t i2cAddr)
   // 检查模块连接
   if (!readPartID() == MAX30102_EXPECTED_PARTID) {
     // 读取的part ID与预期的part ID不匹配。
+    DBG("not expected partid");
     return false;
   }
   //复位
@@ -244,7 +245,7 @@ void DFRobot_MAX30102::disableFIFORollover(void)
   writeReg(MAX30102_FIFOCONFIG, &FIFOReg, 1);
 }
 
-void DFRobot_MAX30102::setFIFOAlmostFull(uint8_t numberOfSamples)//样本数设置: 0x00 is 32 samples, 0x02 is 30 samples
+void DFRobot_MAX30102::setFIFOAlmostFull(uint8_t numberOfSamples)//触发该中断的样本数 = 32 - numberOfSamples
 {
   sFIFO_t FIFOReg;
   readReg(MAX30102_FIFOCONFIG, &FIFOReg, 1);
@@ -307,17 +308,17 @@ void DFRobot_MAX30102::sensorConfiguration(uint8_t ledBrightness, uint8_t sample
   //LED亮度
   setPulseAmplitudeRed(ledBrightness);
   setPulseAmplitudeIR(ledBrightness);
-  //每个样本被分割成四个时间槽，SLOT1~SLOT4，根据设置的LED模式启用槽
+  //每个样本被分割成四个时间槽，SLOT1~SLOT4，根据设置的LED模式确定
   enableSlot(1, MAX30102_SLOT_RED_LED);//将Slot1的RED设置为活动
   if (ledMode > MAX30102_MODE_REDONLY) enableSlot(2, MAX30102_SLOT_IR_LED);//将Slot2的IR设置为活动
 
   /*模式设置*/
+  setLEDMode(ledMode);
+  //根据设置的LED模式确定激活的LED灯数量
   if (ledMode == MAX30102_MODE_REDONLY) {
-    setLEDMode(ledMode);
-    activeLEDs = 1;
+    _activeLEDs = 1;
   } else {
-    setLEDMode(ledMode);
-    activeLEDs = 2;
+    _activeLEDs = 2;
   }
 
   enableFIFORollover(); //启用FIFO满时，自动归零
@@ -328,30 +329,33 @@ void DFRobot_MAX30102::sensorConfiguration(uint8_t ledBrightness, uint8_t sample
 
 uint32_t DFRobot_MAX30102::getRed(void)
 {
-  getNewData(); //得到数据
+  getNewData();
   return (senseBuf.red[senseBuf.head]);
 }
 
 uint32_t DFRobot_MAX30102::getIR(void)
 {
-  getNewData(); //得到数据
+  getNewData();
   return (senseBuf.IR[senseBuf.head]);
 }
 
 void DFRobot_MAX30102::getNewData(void)//循环获取新数据
 {
   int32_t numberOfSamples = 0;
-  while (numberOfSamples == 0) {//缓冲区有可用样本后，才会返回
-    uint8_t readPointer = getReadPointer();//读取FIFO读指针
-    uint8_t writePointer = getWritePointer();
-    //读取寄存器数据直到FIFO_RD_PTR = FIFO_WR_PTR
-    if (readPointer != writePointer) {
-      //计算我们需要从传感器获得的读数数量
+  uint8_t readPointer = 0;//读取FIFO读指针
+  uint8_t writePointer = 0;
+  while (1) {//缓冲区有可用样本后，才会返回，避免缓冲区数据未更新而出现相同的读数
+    readPointer = getReadPointer();//读取FIFO读指针
+    writePointer = getWritePointer();
+    //判断有无可读数据
+    if (readPointer == writePointer) {
+      DBG("no data");
+    } else {
+      //待读取样本数量
       numberOfSamples = writePointer - readPointer;
-      if (numberOfSamples < 0) numberOfSamples += 32; //样本数
-
-      //有了读取的数量，现在需要读取的字节，对于本例，我们只使用Red和IR(各3个字节)
-      int32_t bytesLeftToRead = numberOfSamples * activeLEDs * 3;
+      if (numberOfSamples < 0) numberOfSamples += 32;
+      //待读取字节
+      int32_t bytesLeftToRead = numberOfSamples * _activeLEDs * 3;
 
       _pWire->beginTransmission(MAX30102_IIC_ADDRESS);
       _pWire->write(MAX30102_FIFODATA);
@@ -361,7 +365,7 @@ void DFRobot_MAX30102::getNewData(void)//循环获取新数据
         int32_t bytesNeedToRead = bytesLeftToRead;
         if (bytesNeedToRead > I2C_BUFFER_LENGTH) {
           //抛弃剩下的几个字节，完整样本
-          bytesNeedToRead = I2C_BUFFER_LENGTH - (I2C_BUFFER_LENGTH % (activeLEDs * 3));
+          bytesNeedToRead = I2C_BUFFER_LENGTH - (I2C_BUFFER_LENGTH % (_activeLEDs * 3));
         }
         bytesLeftToRead -= bytesNeedToRead;
         //从传感器获取相应字节数
@@ -379,10 +383,10 @@ void DFRobot_MAX30102::getNewData(void)//循环获取新数据
           temp[0] = _pWire->read();
           //转换为uint32_t
           memcpy(&tempLength, temp, sizeof(tempLength));
-          tempLength &= 0x3FFFF; //3字节有效
+                    tempLength &= 0x3FFFF; //3字节有效
           senseBuf.red[senseBuf.head] = tempLength;
 
-          if (activeLEDs > 1) { //如果启用了IR
+          if (_activeLEDs > 1) { //如果启用了IR
             //再读3个字节，对应IR
             temp[3] = 0;
             temp[2] = _pWire->read();
@@ -390,15 +394,14 @@ void DFRobot_MAX30102::getNewData(void)//循环获取新数据
             temp[0] = _pWire->read();
             //转换为uint32_t
             memcpy(&tempLength, temp, sizeof(tempLength));
-            tempLength &= 0x3FFFF; //3字节有效
+                      tempLength &= 0x3FFFF; //3字节有效
             senseBuf.IR[senseBuf.head] = tempLength;
           }
-          bytesNeedToRead -= activeLEDs * 3;
+          bytesNeedToRead -= _activeLEDs * 3;
         }
       }
+      return;
     }
-    DBG("fifo no data");
-    delay(1);
   }
 }
 

@@ -59,8 +59,8 @@
 * ownership rights.
 *******************************************************************************
 */
-#ifndef SPO2_ALGORITHM_H_
-#define SPO2_ALGORITHM_H_
+#ifndef ALGORITHM_H_
+#define ALGORITHM_H_
 
 #include <Arduino.h>
 

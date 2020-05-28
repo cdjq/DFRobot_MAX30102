@@ -1,7 +1,7 @@
 /*!
  * @file heartRate.ino
- * @brief 在串口上显示实时心率，没有异常值的情况下，取平均值可以得到更准确的测量结果
- * @n 用夹子把传感器牢牢固定在手指上，等待一段时间，手指按压力度变化会使心跳识别失败
+ * @brief 在串口上显示实时心率，心率根据两次心跳的间隔时间求得，第一次显示结果不正确
+ * @n 用夹子把传感器固定在手指上，手指按压力度变化会使识别错误，出现异常值
  * @n 本示例支持的主板有ESP8266、FireBeetle-M0、UNO、ESP32、Leonardo 、Mega2560
  * @copyright  Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
@@ -13,7 +13,6 @@
 
 #include <DFRobot_MAX30102.h>
 
-#include <heartRate.h>
 
 DFRobot_MAX30102 particleSensor;
 
@@ -52,29 +51,33 @@ void setup()
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
    */
   particleSensor.sensorConfiguration();
+  Serial.println("Hold for a while and your heart rate will appear");
 }
 
-int32_t lastBeat = 0; //最近一次心跳发生的时间
-uint32_t beatsPerMinute; //每分钟心跳
-float delta; //与上一次心跳的间隔时间
-int32_t infraredValue; //红外读数
+int32_t heartbeatTime = 0; //最近一次心跳发生的时间
+uint32_t BPM; //每分钟心跳
+float intervalTime; //与上一次心跳的间隔时间
+int32_t IR; //红外读数
 
 void loop()
 {
-  infraredValue = particleSensor.getIR();
-  //识别一次心跳，使用 Penpheral Beat Amplitude (PBA) 算法
-  if(checkForBeat(infraredValue) == true) {
-    //根据间隔时间求出频率
-    delta = millis() - lastBeat;
-    lastBeat = millis();
-    beatsPerMinute = 60 / (delta / 1000.0);
-    Serial.print(F("IR="));
-    Serial.print(infraredValue);
-    Serial.print(F(", BPM="));
-    Serial.println(beatsPerMinute);
-  }
-
-  if (infraredValue < 50000) {
-    Serial.println("Invalid, Please put your finger on the sensor and wait a moment");//没有检测到手指
+  /*!
+   *@brief 获得IR值
+   *@return 4字节红外光读数
+   */
+  IR = particleSensor.getIR();
+  /*!
+   *@brief 识别一次心跳
+   *@param sample 红光或红外光的读数
+   *@return true or false
+   */
+  if(checkForBeat(/*sample=*/IR) == true) {
+    //根据心跳间隔时间求出心率
+    intervalTime = (millis() - heartbeatTime) / 1000.0;//计算间隔时间
+    heartbeatTime = millis();//记录当前时间
+    BPM = 60 / intervalTime;
+    //打印结果
+    Serial.print(F("BPM="));
+    Serial.println(BPM);
   }
 }

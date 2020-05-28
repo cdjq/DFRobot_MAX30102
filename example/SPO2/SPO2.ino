@@ -1,7 +1,7 @@
 /*!
  * @file SPO2.ino
  * @brief 在串口上显示实时心率和SPO2水平，正常人的血氧浓度范围在95~100之间
- * @n 最好用橡皮筋把传感器固定在手指上，手指按压力度的变化会导致读数不稳定，每次力度变化，会在一段时间后恢复正常
+ * @n 最好用橡皮筋把传感器固定在手指上，手指按压力度的变化会影响结果
  * @n 本示例支持的主板有ESP8266、FireBeetle-M0、UNO、ESP32、Leonardo 、Mega2560
  * @copyright  Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
@@ -63,7 +63,7 @@ int8_t heartRateValid; //显示心率计算是否有效的标志
 void loop()
 {
   particleSensor.heartrateAndOxygenSaturation(/**SPO2=*/&SPO2, /**SPO2Valid=*/&SPO2Valid, /**heartRate=*/&heartRate, /**heartRateValid=*/&heartRateValid);
-
+  //打印结果
   Serial.print(F("heartRate="));
   Serial.print(heartRate, DEC);
   Serial.print(F(", heartRateValid="));

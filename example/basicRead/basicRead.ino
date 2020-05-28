@@ -55,6 +55,7 @@ void setup()
 
 void loop()
 {
+  //打印结果
   Serial.print("R=");
   /*!
    *@brief 获得red值

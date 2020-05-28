@@ -58,11 +58,10 @@ void setup()
 
 void loop()
 {
-  while (particleSensor.available() == 0) {//计算缓冲区中可用样本数，如果读出数据则跳出循环
-    particleSensor.getNewData(1); //读取数据
-  }
-  while(1) {
-    //将原始数据发送到串口，打开串口绘图工具查看
-    Serial.println(particleSensor.getIR()); 
-  }
+  //将原始数据发送到串口，打开串口绘图工具查看
+  /*!
+   *@brief 获得IR值
+   *@return 4字节红外光读数
+   */
+  Serial.println(particleSensor.getIR()); 
 }

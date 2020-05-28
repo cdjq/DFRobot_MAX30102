@@ -54,9 +54,18 @@ void setup()
 
 void loop()
 {
+  //打印结果
   Serial.print("temperatureC=");
+  /*!
+   *@brief 获取模块温度，单位是摄氏度
+   *@return 浮点型温度值
+   */
   Serial.print(particleSensor.readTemperatureC());
   Serial.print(" temperatureF=");
+  /*!
+   *@brief 获取模块温度，单位是华氏度
+   *@return 浮点型温度值
+   */
   Serial.print(particleSensor.readTemperatureF());
   Serial.println();
 }
