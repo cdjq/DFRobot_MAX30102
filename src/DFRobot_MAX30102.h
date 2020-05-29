@@ -245,42 +245,28 @@ public:
   bool begin(TwoWire *pWire = &Wire, uint8_t i2cAddr = MAX30102_IIC_ADDRESS);
 
   /*!
-   *@brief 传感器配置
+   *@brief 传感器配置，使用给出的宏定义进行配置
    *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=Off ，255=50mA）
    *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
    *@param ledMode LED模式选项，默认同时使用红色和红外
    *@param sampleRate 采样速率，默认每秒取400个样本
-   *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围，411(µs)
+   *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
    */
   void sensorConfiguration(uint8_t ledBrightness = 0x1F, uint8_t sampleAverage = MAX30102_SAMPLEAVG_4, \
                            uint8_t ledMode = MAX30102_MODE_RED_IR, uint8_t sampleRate = MAX30102_SAMPLERATE_400, \
                            uint8_t pulseWidth = MAX30102_PULSEWIDTH_411, uint8_t adcRange = MAX30102_ADCRANGE_4096);
 
-  /*!
-   *@brief 所有配置、阈值和数据寄存器复位。复位完成后，复位位自动清零
-   */
-  void softReset();
-
-  /*!
-   *@brief 进入省电模式。在省电模式下，所有寄存器都保留其值，读写操作可正常工作。所有中断都清除为零
-   */
-  void shutDown();
-
-  /*!
-   *@brief 唤醒模块，正常工作
-   */
-  void wakeUp();
-
+  
   /*!
    *@brief 获得red值
-   *@return 4字节红光读数
+   *@return 红光读数
    */
   uint32_t getRed(void);
 
   /*!
    *@brief 获得IR值
-   *@return 4字节红外光读数
+   *@return 红外光读数
    */
   uint32_t getIR(void);
 
@@ -306,6 +292,21 @@ public:
   void heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Valid,int32_t* heartRate,int8_t* heartRateValid);
 
 private:
+  
+  /*!
+   *@brief 所有配置、阈值和数据寄存器复位。复位完成后，复位位自动清零
+   */
+  void softReset();
+
+  /*!
+   *@brief 进入省电模式。在省电模式下，所有寄存器都保留其值，读写操作可正常工作。所有中断都清除为零
+   */
+  void shutDown();
+
+  /*!
+   *@brief 唤醒模块，正常工作
+   */
+  void wakeUp();
 
   /*!
    *@brief 设置LED模式
@@ -424,13 +425,13 @@ private:
 
   /*!
    *@brief 得到FIFO写指针
-   *@return 1字节写指针
+   *@return 写指针
    */
   uint8_t getWritePointer(void);
 
   /*!
    *@brief 得到FIFO读指针
-   *@return 1字节读指针
+   *@return 读指针
    */
   uint8_t getReadPointer(void);
 
@@ -446,9 +447,9 @@ private:
 
   /*!
    *@brief 计算缓冲区中可用样本数
-   *@return 1字节可用样本数
+   *@return 可用样本数
    */
-  uint8_t available(void);
+  uint8_t numberOfSamples(void);
 
   /*!
    *@brief 指向缓冲区中的下一个样本

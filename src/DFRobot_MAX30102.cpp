@@ -398,7 +398,7 @@ void DFRobot_MAX30102::getNewData(void)//循环获取新数据
   }
 }
 
-uint8_t DFRobot_MAX30102::available(void)//计算缓冲区中可用样本数
+uint8_t DFRobot_MAX30102::numberOfSamples(void)//计算缓冲区中可用样本数
 {
   int8_t numberOfSamples = senseBuf.head - senseBuf.tail;
   if (numberOfSamples < 0) numberOfSamples += MAX30102_SENSE_BUF_SIZE;
@@ -407,7 +407,7 @@ uint8_t DFRobot_MAX30102::available(void)//计算缓冲区中可用样本数
 
 void DFRobot_MAX30102::nextSample(void)//指向缓冲区中的下一个样本
 {
-  if(available()) { //还有新数据
+  if(numberOfSamples()) { //还有新数据
     senseBuf.tail++;
     senseBuf.tail %= MAX30102_SENSE_BUF_SIZE;
   }
