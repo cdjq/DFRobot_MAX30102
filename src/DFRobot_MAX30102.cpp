@@ -17,14 +17,13 @@ DFRobot_MAX30102::DFRobot_MAX30102(void)
 
 }
 
-bool DFRobot_MAX30102::begin(TwoWire *pWire, uint32_t i2cSpeed, uint8_t i2cAddr)
+bool DFRobot_MAX30102::begin(TwoWire *pWire, uint8_t i2cAddr)
 {
   _i2cAddr = i2cAddr;
   _pWire = pWire;
   _pWire->begin();
-  _pWire->setClock(i2cSpeed);
   // 检查模块连接
-  if (!readPartID() == MAX30102_EXPECTED_PARTID) {
+  if (!getPartID() == MAX30102_EXPECTED_PARTID) {
     // 读取的part ID与预期的part ID不匹配。
     DBG("not expected partid");
     return false;
@@ -285,7 +284,7 @@ float DFRobot_MAX30102::readTemperatureF()
   return (temp);
 }
 
-uint8_t DFRobot_MAX30102::readPartID()
+uint8_t DFRobot_MAX30102::getPartID()
 {
   uint8_t byteTemp;
   readReg(MAX30102_PARTID, &byteTemp, 1);
@@ -351,55 +350,49 @@ void DFRobot_MAX30102::getNewData(void)//循环获取新数据
     if (readPointer == writePointer) {
       DBG("no data");
     } else {
-      //待读取样本数量
       numberOfSamples = writePointer - readPointer;
-      if (numberOfSamples < 0) numberOfSamples += 32;
-      //待读取字节
-      int32_t bytesLeftToRead = numberOfSamples * _activeLEDs * 3;
-
-      _pWire->beginTransmission(MAX30102_IIC_ADDRESS);
-      _pWire->write(MAX30102_FIFODATA);
-      _pWire->endTransmission();
-
-      while (bytesLeftToRead > 0) {
-        int32_t bytesNeedToRead = bytesLeftToRead;
-        if (bytesNeedToRead > I2C_BUFFER_LENGTH) {
-          //抛弃剩下的几个字节，完整样本
-          bytesNeedToRead = I2C_BUFFER_LENGTH - (I2C_BUFFER_LENGTH % (_activeLEDs * 3));
-        }
-        bytesLeftToRead -= bytesNeedToRead;
+      if (numberOfSamples < 0) numberOfSamples += 32;//待读取样本数量
+      int32_t bytesNeedToRead = numberOfSamples * _activeLEDs * 3;//待读取字节数
         //从传感器获取相应字节数
-        _pWire->requestFrom(MAX30102_IIC_ADDRESS, bytesNeedToRead);
         while (bytesNeedToRead > 0) {
           senseBuf.head++;
           senseBuf.head %= MAX30102_SENSE_BUF_SIZE;//指向新数据的指针
-          uint8_t temp[sizeof(uint32_t)];//用一个字节的数组表示4字节的整型数
-          uint32_t tempLength;
+          uint32_t tempBuf = 0;
+          if (_activeLEDs > 1) { //如果启用了IR，读6个字节
+            uint8_t temp[6];
+            uint8_t tempex;
 
-          //读3个字节，对应RED
-          temp[3] = 0;
-          temp[2] = _pWire->read();
-          temp[1] = _pWire->read();
-          temp[0] = _pWire->read();
-          //转换为uint32_t
-          memcpy(&tempLength, temp, sizeof(tempLength));
-                    tempLength &= 0x3FFFF; //3字节有效
-          senseBuf.red[senseBuf.head] = tempLength;
+            readReg(MAX30102_FIFODATA, temp, 6);
+            //存储空间上顺序反了，交换顺序
+            for(uint8_t i = 0; i < 3; i++){
+              tempex = temp[i];
+              temp[i] = temp[5-i];
+              temp[5-i] = tempex;
+            }
 
-          if (_activeLEDs > 1) { //如果启用了IR
-            //再读3个字节，对应IR
-            temp[3] = 0;
-            temp[2] = _pWire->read();
-            temp[1] = _pWire->read();
-            temp[0] = _pWire->read();
-            //转换为uint32_t
-            memcpy(&tempLength, temp, sizeof(tempLength));
-                      tempLength &= 0x3FFFF; //3字节有效
-            senseBuf.IR[senseBuf.head] = tempLength;
+            memcpy(&tempBuf, temp, 3*sizeof(temp[0]));
+            tempBuf &= 0x3FFFF;
+            senseBuf.IR[senseBuf.head] = tempBuf;
+            memcpy(&tempBuf, temp+3, 3*sizeof(temp[0]));
+            tempBuf &= 0x3FFFF;
+            senseBuf.red[senseBuf.head] = tempBuf;
+          } else { 
+            uint8_t temp[3];
+            uint8_t tempex;
+
+            //读3个字节，对应RED
+            readReg(MAX30102_FIFODATA, temp, 3);
+            tempex = temp[0];
+            temp[0] = temp[2];
+            temp[2] = tempex;
+
+            memcpy(&tempBuf, temp, 3*sizeof(temp[0]));
+            tempBuf &= 0x3FFFF;
+            senseBuf.red[senseBuf.head] = tempBuf;
           }
           bytesNeedToRead -= _activeLEDs * 3;
         }
-      }
+      
       return;
     }
   }

@@ -37,8 +37,6 @@
 #else
 #define I2C_BUFFER_LENGTH 32
 #endif
-//I2C speed
-#define MAX30102_I2C_SPEED     400000
 
 //Status Registers
 #define MAX30102_INTSTAT1        0x00//Interrupt Status1
@@ -222,7 +220,7 @@ public:
   } __attribute__ ((packed)) sMultiLED_t;
 
   /*!
-   *@brief 保存传感器FIFO中样本的缓冲区
+   *@brief 保存样本的缓冲区
    */
   typedef struct {
     uint32_t red[MAX30102_SENSE_BUF_SIZE];
@@ -241,11 +239,10 @@ public:
   /*!
    *@brief 传感器初始化
    *@param pWire IIC bus pointer object and construction device, can both pass or not pass parameters (Wire in default)
-   *@param i2cSpeed I2C speed (100000 in default)
    *@param i2cAddr Chip IIC address (0x57 in default)
    *@return true or false
    */
-  bool begin(TwoWire *pWire = &Wire, uint32_t i2cSpeed = MAX30102_I2C_SPEED, uint8_t i2cAddr = MAX30102_IIC_ADDRESS);
+  bool begin(TwoWire *pWire = &Wire, uint8_t i2cAddr = MAX30102_IIC_ADDRESS);
 
   /*!
    *@brief 传感器配置
@@ -423,7 +420,7 @@ private:
   /*!
    *@brief 读取芯片ID
    */
-  uint8_t readPartID();
+  uint8_t getPartID();
 
   /*!
    *@brief 得到FIFO写指针

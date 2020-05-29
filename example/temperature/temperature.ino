@@ -32,7 +32,6 @@ void setup()
   /*!
    *@brief 传感器初始化
    *@param pWire IIC bus pointer object and construction device, can both pass or not pass parameters (Wire in default)
-   *@param i2cSpeed I2C speed (100000 in default)
    *@param i2cAddr Chip IIC address (0x57 in default)
    *@return true or false
    */
@@ -49,7 +48,7 @@ void setup()
    *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围，411(µs)
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
    */
-  particleSensor.sensorConfiguration(0); //关闭led灯
+  particleSensor.sensorConfiguration(0); //只设置了ledBrightness，其他使用默认
 }
 
 void loop()

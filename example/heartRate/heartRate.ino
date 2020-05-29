@@ -33,11 +33,10 @@ void setup()
   /*!
    *@brief 传感器初始化
    *@param pWire IIC bus pointer object and construction device, can both pass or not pass parameters (Wire in default)
-   *@param i2cSpeed I2C speed (100000 in default)
    *@param i2cAddr Chip IIC address (0x57 in default)
    *@return true or false
    */
-  if (!particleSensor.begin(/*&pWire=*/&Wire, /*i2cSpeed=*/MAX30102_I2C_SPEED)) {//使用默认的I2C端口，I2C速度400kHz
+  if (!particleSensor.begin()) {
     Serial.println("MAX30102 was not found");
     while (1);
   }
