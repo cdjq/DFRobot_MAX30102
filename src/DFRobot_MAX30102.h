@@ -29,15 +29,6 @@
 
 #define MAX30102_IIC_ADDRESS  0x57 //I2C Address
 
-//定义I2C缓冲区的大小
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
-#define I2C_BUFFER_LENGTH BUFFER_LENGTH //Wire.h
-#elif defined(__SAMD21G18A__)
-#define I2C_BUFFER_LENGTH SERIAL_BUFFER_SIZE //RingBuffer.h
-#else
-#define I2C_BUFFER_LENGTH 32
-#endif
-
 //Status Registers
 #define MAX30102_INTSTAT1        0x00//Interrupt Status1
 #define MAX30102_INTSTAT2        0x01//Interrupt Status2
