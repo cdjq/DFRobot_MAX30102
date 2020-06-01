@@ -53,10 +53,10 @@ void setup()
                         /*pulseWidth=*/MAX30102_PULSEWIDTH_411, /*adcRange=*/MAX30102_ADCRANGE_16384);
 }
 
-int32_t SPO2=0; //血氧浓度
-int8_t SPO2Valid=0; //显示SPO2计算是否有效的标志
-int32_t heartRate=0; //心率
-int8_t heartRateValid=0; //显示心率计算是否有效的标志
+int32_t SPO2; //血氧浓度
+int8_t SPO2Valid; //显示SPO2计算是否有效的标志
+int32_t heartRate; //心率
+int8_t heartRateValid; //显示心率计算是否有效的标志
 
 void loop()
 {
