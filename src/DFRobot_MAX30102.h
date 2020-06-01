@@ -1,8 +1,8 @@
 /*!
  * @file DFRobot_MAX30102.h
  * @brief Define the basic structure of class DFRobot_MAX30102
- * @n 这是一个血氧饱和度和心率监测模块
- * @n 可以采集红色和红外读数，温度传感器读数
+ * @n This is a library used to drive  sensor
+ * @n 可以采集红光和红外光读数，温度传感器读数，包含了心率和血氧饱和度的算法
  * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
@@ -239,7 +239,7 @@ public:
    *@brief 传感器配置，使用给出的宏定义进行配置
    *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=Off ，255=50mA）
    *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
-   *@param ledMode LED模式选项，默认同时使用红色和红外
+   *@param ledMode LED灯的模式，默认同时使用红光和红外光
    *@param sampleRate 采样速率，默认每秒取400个样本
    *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
@@ -336,7 +336,7 @@ private:
   void setPulseAmplitudeIR(uint8_t amplitude);
 
   /*!
-   *@brief 根据给定编号配置led设备，一共有四个时隙，我们只用到slot1和slot2，设备有红色和红外
+   *@brief 根据给定编号配置led设备，一共有四个时隙，我们只用到slot1和slot2，设备有红光和红外光
    *@param slotNumber 槽编号，可取1,2
    *@param device LED设备名：MAX30102_SLOT_RED_LED 或 MAX30102_SLOT_IR_LED
    */
@@ -441,11 +441,6 @@ private:
    *@return 可用样本数
    */
   uint8_t numberOfSamples(void);
-
-  /*!
-   *@brief 指向缓冲区中的下一个样本
-   */
-  void nextSample(void);
 
   void writeReg(uint8_t reg, const void* pBuf, uint8_t size);
   uint8_t readReg(uint8_t reg, const void* pBuf, uint8_t size);

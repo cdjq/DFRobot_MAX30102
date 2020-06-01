@@ -1,6 +1,6 @@
 /*!
  * @file basicRead.ino
- * @brief 输出红色和红外的读数
+ * @brief 输出红光和红外光的读数
  * @n 本示例支持的主板有ESP8266、FireBeetle-M0、UNO、ESP32、Leonardo 、Mega2560
  * @copyright  Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
@@ -42,7 +42,7 @@ void setup()
    *@brief 传感器配置，使用给出的宏定义进行配置
    *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=Off ，255=50mA）
    *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
-   *@param ledMode LED模式选项，默认同时使用红色和红外
+   *@param ledMode LED灯的模式，默认同时使用红光和红外光
    *@param sampleRate 采样速率，默认每秒取400个样本
    *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB

@@ -2,7 +2,7 @@
  * @file DFRobot_MAX30102.h
  * @brief Define the basic structure of class DFRobot_MAX30102
  * @n 这是一个血氧饱和度和心率监测模块
- * @n 可以采集红色和红外读数，温度传感器读数
+ * @n 可以采集红光和红外光读数，温度传感器读数
  * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
@@ -30,6 +30,8 @@ bool DFRobot_MAX30102::begin(TwoWire *pWire, uint8_t i2cAddr)
   }
   //复位
   softReset();
+  senseBuf.tail = 0;
+  senseBuf.head = 0;
   return true;
 }
 
@@ -395,6 +397,7 @@ void DFRobot_MAX30102::getNewData(void)//循环获取新数据
       
       return;
     }
+    delay(1);
   }
 }
 
@@ -405,18 +408,10 @@ uint8_t DFRobot_MAX30102::numberOfSamples(void)//计算缓冲区中可用样本�
   return numberOfSamples;//返回可用样本数
 }
 
-void DFRobot_MAX30102::nextSample(void)//指向缓冲区中的下一个样本
-{
-  if(numberOfSamples()) { //还有新数据
-    senseBuf.tail++;
-    senseBuf.tail %= MAX30102_SENSE_BUF_SIZE;
-  }
-}
-
 void DFRobot_MAX30102::heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Valid,int32_t* heartRate,int8_t* heartRateValid)
 {
-  //Arduino Uno使用16位缓冲区存放数据
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
+  //Arduino Uno
   uint16_t irBuffer[100];
   uint16_t redBuffer[100];
 #else
@@ -424,24 +419,14 @@ void DFRobot_MAX30102::heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Va
   uint32_t redBuffer[100];
 #endif
   int32_t bufferLength = 100;
-
+  //装满缓冲区
   for (uint8_t i = 0 ; i < bufferLength ; i++) {
     getNewData(); //读取数据，存放在缓冲区
-    redBuffer[i] = senseBuf.red[senseBuf.tail];//由tail指向的样本是新样本
-    irBuffer[i] = senseBuf.IR[senseBuf.tail];
-    nextSample();
+    redBuffer[i] = senseBuf.red[senseBuf.head];
+    irBuffer[i] = senseBuf.IR[senseBuf.head];
   }
 
-  /**
-   *@brief 计算bufferLength个样本的心率和血氧饱和度
-   *@param *pun_ir_buffer            [in]红外数据缓冲区
-   *@param n_ir_buffer_length        [in]红外数据缓冲区长度
-   *@param *pun_red_buffer           [in]红色数据缓冲区
-   *@param *pn_spo2                  [out]计算的SpO2值
-   *@param *pch_spo2_valid           [out]如果计算的SpO2值是有效的，值为1
-   *@param *pn_heart_rate            [out]计算的心率值
-   *@param *pch_hr_valid             [out]如果计算出的心率值是有效的，值为1
-   */
+  //计算bufferLength个样本的心率和血氧饱和度
   maxim_heart_rate_and_oxygen_saturation(/**pun_ir_buffer=*/irBuffer, /*n_ir_buffer_length=*/bufferLength, /**pun_red_buffer=*/redBuffer, \
       /**pn_spo2=*/SPO2, /**pch_spo2_valid=*/SPO2Valid, /**pn_heart_rate=*/heartRate, /**pch_hr_valid=*/heartRateValid);
 }
