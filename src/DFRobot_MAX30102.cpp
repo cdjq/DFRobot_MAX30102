@@ -1,13 +1,13 @@
 /*!
  * @file DFRobot_MAX30102.h
  * @brief Define the basic structure of class DFRobot_MAX30102
- * @n 这是一个血氧饱和度和心率监测模块
- * @n 可以采集红光和红外光读数，温度传感器读数
+ * @n This is a library used to drive heart rate and oximeter sensor
+ * @n 可以自由控制传感器，采集红光和红外光读数，包含了心率和血氧饱和度的算法
  * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
  * @version  V1.0
- * @date  2020-03-30
+ * @date  2020-05-30
  * @https://github.com/DFRobot/DFRobot_MAX30102
  */
 #include <DFRobot_MAX30102.h>

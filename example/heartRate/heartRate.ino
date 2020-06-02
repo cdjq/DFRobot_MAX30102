@@ -7,7 +7,7 @@
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
  * @version  V0.1
- * @date  2020-04-29
+ * @date  2020-05-29
  * @url https://github.com/DFRobot/DFRobot_MAX30102
  */
 
