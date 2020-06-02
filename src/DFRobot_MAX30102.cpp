@@ -416,7 +416,6 @@ void DFRobot_MAX30102::heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Va
     if (numberOfSamples < 0) {
       numberOfSamples += MAX30102_SENSE_BUF_SIZE;
     }
-    Serial.println(numberOfSamples);
     //填充样本
     while(numberOfSamples--) {
       redBuffer[i] = senseBuf.red[senseBuf.tail];
