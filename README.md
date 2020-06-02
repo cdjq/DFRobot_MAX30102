@@ -45,9 +45,9 @@ To use this library, first download the library file, paste it into the \Arduino
    *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
    */
-  void sensorConfiguration(uint8_t ledBrightness = 0x1F, uint8_t sampleAverage = MAX30102_SAMPLEAVG_4, \
-                           uint8_t ledMode = MAX30102_MODE_RED_IR, uint8_t sampleRate = MAX30102_SAMPLERATE_400, \
-                           uint8_t pulseWidth = MAX30102_PULSEWIDTH_411, uint8_t adcRange = MAX30102_ADCRANGE_4096);
+  void sensorConfiguration(uint8_t ledBrightness = 0x1F, uint8_t sampleAverage = SAMPLEAVG_4, \
+                           uint8_t ledMode = MODE_RED_IR, uint8_t sampleRate = SAMPLERATE_400, \
+                           uint8_t pulseWidth = PULSEWIDTH_411, uint8_t adcRange = ADCRANGE_4096);
 
   /*!
    *@brief 获得red值

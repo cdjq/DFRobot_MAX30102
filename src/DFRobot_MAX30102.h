@@ -1,7 +1,7 @@
 /*!
  * @file DFRobot_MAX30102.h
  * @brief Define the basic structure of class DFRobot_MAX30102
- * @n This is a library used to drive  sensor
+ * @n This is a library used to drive heart rate and oximeter sensor
  * @n 可以采集红光和红外光读数，温度传感器读数，包含了心率和血氧饱和度的算法
  * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
@@ -59,53 +59,53 @@
 #define MAX30102_PARTID          0xFF//Part ID:0x15
 #define MAX30102_EXPECTED_PARTID  0x15
 
-//配置选项
-//FIFO Configuration(寄存器地址0x08)
-//sampleAverage(Table 3. Sample Averaging)
-#define MAX30102_SAMPLEAVG_1     0
-#define MAX30102_SAMPLEAVG_2     1
-#define MAX30102_SAMPLEAVG_4     2
-#define MAX30102_SAMPLEAVG_8     3
-#define MAX30102_SAMPLEAVG_16    4
-#define MAX30102_SAMPLEAVG_32    5
-
-//Mode configuration(寄存器地址0x09)
-//ledMode(Table 4. Mode Control)
-#define MAX30102_MODE_REDONLY    2
-#define MAX30102_MODE_RED_IR     3
-#define MAX30102_MODE_MULTILED   7
-
-//Particle sensing configuration(寄存器地址0x0A)
-//adcRange(Table 5. SpO2 ADC Range Control)
-#define MAX30102_ADCRANGE_2048   0
-#define MAX30102_ADCRANGE_4096   1
-#define MAX30102_ADCRANGE_8192   2
-#define MAX30102_ADCRANGE_16384  3
-//sampleRate(Table 6. SpO2 Sample Rate Control)
-#define MAX30102_SAMPLERATE_50   0 
-#define MAX30102_SAMPLERATE_100  1
-#define MAX30102_SAMPLERATE_200  2
-#define MAX30102_SAMPLERATE_400  3
-#define MAX30102_SAMPLERATE_800  4
-#define MAX30102_SAMPLERATE_1000 5
-#define MAX30102_SAMPLERATE_1600 6
-#define MAX30102_SAMPLERATE_3200 7
-//pulseWidth(Table 7. LED Pulse Width Control)
-#define MAX30102_PULSEWIDTH_69   0 
-#define MAX30102_PULSEWIDTH_118  1
-#define MAX30102_PULSEWIDTH_215  2
-#define MAX30102_PULSEWIDTH_411  3
-
-//Multi-LED Mode Control Registers(寄存器地址0x011)
-#define MAX30102_SLOT_NONE       0
-#define MAX30102_SLOT_RED_LED    1
-#define MAX30102_SLOT_IR_LED     2
-
 //存放传感器读数的缓冲区大小，不能小于2
-#define MAX30102_SENSE_BUF_SIZE  10
+#define MAX30102_SENSE_BUF_SIZE  2
 
 class DFRobot_MAX30102
 {
+//配置选项
+//FIFO Configuration(寄存器地址0x08)
+//sampleAverage(Table 3. Sample Averaging)
+#define SAMPLEAVG_1     0
+#define SAMPLEAVG_2     1
+#define SAMPLEAVG_4     2
+#define SAMPLEAVG_8     3
+#define SAMPLEAVG_16    4
+#define SAMPLEAVG_32    5
+
+//Mode configuration(寄存器地址0x09)
+//ledMode(Table 4. Mode Control)
+#define MODE_REDONLY    2
+#define MODE_RED_IR     3
+#define MODE_MULTILED   7
+
+//Particle sensing configuration(寄存器地址0x0A)
+//adcRange(Table 5. SpO2 ADC Range Control)
+#define ADCRANGE_2048   0
+#define ADCRANGE_4096   1
+#define ADCRANGE_8192   2
+#define ADCRANGE_16384  3
+//sampleRate(Table 6. SpO2 Sample Rate Control)
+#define SAMPLERATE_50   0 
+#define SAMPLERATE_100  1
+#define SAMPLERATE_200  2
+#define SAMPLERATE_400  3
+#define SAMPLERATE_800  4
+#define SAMPLERATE_1000 5
+#define SAMPLERATE_1600 6
+#define SAMPLERATE_3200 7
+//pulseWidth(Table 7. LED Pulse Width Control)
+#define PULSEWIDTH_69   0 
+#define PULSEWIDTH_118  1
+#define PULSEWIDTH_215  2
+#define PULSEWIDTH_411  3
+
+//Multi-LED Mode Control Registers(寄存器地址0x011)
+#define SLOT_NONE       0
+#define SLOT_RED_LED    1
+#define SLOT_IR_LED     2
+
 public:
   /*
     Interrupt Status(0x00–0x01) (pg 12)
@@ -244,9 +244,9 @@ public:
    *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
    */
-  void sensorConfiguration(uint8_t ledBrightness = 0x1F, uint8_t sampleAverage = MAX30102_SAMPLEAVG_4, \
-                           uint8_t ledMode = MAX30102_MODE_RED_IR, uint8_t sampleRate = MAX30102_SAMPLERATE_400, \
-                           uint8_t pulseWidth = MAX30102_PULSEWIDTH_411, uint8_t adcRange = MAX30102_ADCRANGE_4096);
+  void sensorConfiguration(uint8_t ledBrightness = 0x1F, uint8_t sampleAverage = SAMPLEAVG_4, \
+                           uint8_t ledMode = MODE_RED_IR, uint8_t sampleRate = SAMPLERATE_400, \
+                           uint8_t pulseWidth = PULSEWIDTH_411, uint8_t adcRange = ADCRANGE_4096);
 
   
   /*!
@@ -301,7 +301,7 @@ private:
 
   /*!
    *@brief 设置LED模式
-   *@param mode 模式使用宏定义ledMode中的选项进行配置
+   *@param mode 模式使用注释有ledMode的宏定义进行配置
    */
   void setLEDMode(uint8_t mode);
   
@@ -338,7 +338,7 @@ private:
   /*!
    *@brief 根据给定编号配置led设备，一共有四个时隙，我们只用到slot1和slot2，设备有红光和红外光
    *@param slotNumber 槽编号，可取1,2
-   *@param device LED设备名：MAX30102_SLOT_RED_LED 或 MAX30102_SLOT_IR_LED
+   *@param device LED设备名：SLOT_RED_LED 或 SLOT_IR_LED
    */
   void enableSlot(uint8_t slotNumber, uint8_t device);
 
@@ -389,7 +389,7 @@ private:
 
   /*!
    *@brief 设置样本平均，传感器将会发送多个样本的平均值
-   *@param samples 平均的样本数，使用宏定义FIFO Configuration中的选项进行配置
+   *@param samples 平均的样本数，使用注释有sampleAverage的宏定义进行配置
    */
   void setFIFOAverage(uint8_t samples);
 
@@ -435,12 +435,6 @@ private:
    *@brief 读取新数据并保存在结构体缓冲区
    */
   void getNewData(void);
-
-  /*!
-   *@brief 计算缓冲区中可用样本数
-   *@return 可用样本数
-   */
-  uint8_t numberOfSamples(void);
 
   void writeReg(uint8_t reg, const void* pBuf, uint8_t size);
   uint8_t readReg(uint8_t reg, const void* pBuf, uint8_t size);

@@ -17,13 +17,13 @@ DFRobot_MAX30102 particleSensor;
 
 /*
 传感器配置中使用的宏定义选项
-sampleAverage: MAX30102_SAMPLEAVG_1 MAX30102_SAMPLEAVG_2 MAX30102_SAMPLEAVG_4 
-               MAX30102_SAMPLEAVG_8 MAX30102_SAMPLEAVG_16 MAX30102_SAMPLEAVG_32
-ledMode:       MAX30102_MODE_REDONLY  MAX30102_MODE_RED_IR  MAX30102_MODE_MULTILED
-sampleRate:    MAX30102_PULSEWIDTH_69 MAX30102_PULSEWIDTH_118 MAX30102_PULSEWIDTH_215 MAX30102_PULSEWIDTH_411
-pulseWidth:    MAX30102_SAMPLERATE_50 MAX30102_SAMPLERATE_100 MAX30102_SAMPLERATE_200 MAX30102_SAMPLERATE_400
-               MAX30102_SAMPLERATE_800 MAX30102_SAMPLERATE_1000 MAX30102_SAMPLERATE_1600 MAX30102_SAMPLERATE_3200
-adcRange:      MAX30102_ADCRANGE_2048 MAX30102_ADCRANGE_4096 MAX30102_ADCRANGE_8192 MAX30102_ADCRANGE_16384
+sampleAverage: SAMPLEAVG_1 SAMPLEAVG_2 SAMPLEAVG_4 
+               SAMPLEAVG_8 SAMPLEAVG_16 SAMPLEAVG_32
+ledMode:       MODE_REDONLY  MODE_RED_IR  MODE_MULTILED
+sampleRate:    PULSEWIDTH_69 PULSEWIDTH_118 PULSEWIDTH_215 PULSEWIDTH_411
+pulseWidth:    SAMPLERATE_50 SAMPLERATE_100 SAMPLERATE_200 SAMPLERATE_400
+               SAMPLERATE_800 SAMPLERATE_1000 SAMPLERATE_1600 SAMPLERATE_3200
+adcRange:      ADCRANGE_2048 ADCRANGE_4096 ADCRANGE_8192 ADCRANGE_16384
 */
 void setup()
 {
@@ -37,6 +37,7 @@ void setup()
    */
   while (!particleSensor.begin()) {
     Serial.println("MAX30102 was not found");
+    delay(1);
   }
 
   //设置合理，使串口绘图器上有清楚的锯齿
@@ -49,9 +50,9 @@ void setup()
    *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
    */
-  particleSensor.sensorConfiguration(/*ledBrightness=*/60, /*sampleAverage=*/MAX30102_SAMPLEAVG_8, \
-                                  /*ledMode=*/MAX30102_MODE_RED_IR, /*sampleRate=*/MAX30102_SAMPLERATE_400, \
-                                  /*pulseWidth=*/MAX30102_PULSEWIDTH_411, /*adcRange=*/MAX30102_ADCRANGE_16384);
+  particleSensor.sensorConfiguration(/*ledBrightness=*/60, /*sampleAverage=*/SAMPLEAVG_8, \
+                                  /*ledMode=*/MODE_RED_IR, /*sampleRate=*/SAMPLERATE_400, \
+                                  /*pulseWidth=*/PULSEWIDTH_411, /*adcRange=*/ADCRANGE_16384);
 }
 
 void loop()

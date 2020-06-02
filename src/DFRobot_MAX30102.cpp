@@ -23,15 +23,13 @@ bool DFRobot_MAX30102::begin(TwoWire *pWire, uint8_t i2cAddr)
   _pWire = pWire;
   _pWire->begin();
   // 检查模块连接
-  if (!getPartID() == MAX30102_EXPECTED_PARTID) {
+  if (getPartID() != MAX30102_EXPECTED_PARTID) {
     // 读取的part ID与预期的part ID不匹配。
     DBG("not expected partid");
     return false;
   }
   //复位
   softReset();
-  senseBuf.tail = 0;
-  senseBuf.head = 0;
   return true;
 }
 
@@ -310,13 +308,13 @@ void DFRobot_MAX30102::sensorConfiguration(uint8_t ledBrightness, uint8_t sample
   setPulseAmplitudeRed(ledBrightness);
   setPulseAmplitudeIR(ledBrightness);
   //每个样本被分割成四个时间槽，SLOT1~SLOT4，根据设置的LED模式确定
-  enableSlot(1, MAX30102_SLOT_RED_LED);//将Slot1的RED设置为活动
-  if (ledMode > MAX30102_MODE_REDONLY) enableSlot(2, MAX30102_SLOT_IR_LED);//将Slot2的IR设置为活动
+  enableSlot(1, SLOT_RED_LED);//将Slot1的RED设置为活动
+  if (ledMode > MODE_REDONLY) enableSlot(2, SLOT_IR_LED);//将Slot2的IR设置为活动
 
   /*模式设置*/
   setLEDMode(ledMode);
   //根据设置的LED模式确定激活的LED灯数量
-  if (ledMode == MAX30102_MODE_REDONLY) {
+  if (ledMode == MODE_REDONLY) {
     _activeLEDs = 1;
   } else {
     _activeLEDs = 2;
@@ -345,7 +343,7 @@ void DFRobot_MAX30102::getNewData(void)//循环获取新数据
   int32_t numberOfSamples = 0;
   uint8_t readPointer = 0;//读取FIFO读指针
   uint8_t writePointer = 0;
-  while (1) {//缓冲区有可用样本后，才会返回，避免缓冲区数据未更新而出现相同的读数
+  while (1) {//有可用样本后，才会返回
     readPointer = getReadPointer();//读取FIFO读指针
     writePointer = getWritePointer();
     //判断有无可读数据
@@ -394,18 +392,10 @@ void DFRobot_MAX30102::getNewData(void)//循环获取新数据
           }
           bytesNeedToRead -= _activeLEDs * 3;
         }
-      
       return;
     }
     delay(1);
   }
-}
-
-uint8_t DFRobot_MAX30102::numberOfSamples(void)//计算缓冲区中可用样本数
-{
-  int8_t numberOfSamples = senseBuf.head - senseBuf.tail;
-  if (numberOfSamples < 0) numberOfSamples += MAX30102_SENSE_BUF_SIZE;
-  return numberOfSamples;//返回可用样本数
 }
 
 void DFRobot_MAX30102::heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Valid,int32_t* heartRate,int8_t* heartRateValid)
@@ -420,10 +410,23 @@ void DFRobot_MAX30102::heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Va
 #endif
   int32_t bufferLength = 100;
   //装满缓冲区
-  for (uint8_t i = 0 ; i < bufferLength ; i++) {
+  for (uint8_t i = 0 ; i < bufferLength ; ) {
     getNewData(); //读取数据，存放在缓冲区
-    redBuffer[i] = senseBuf.red[senseBuf.head];
-    irBuffer[i] = senseBuf.IR[senseBuf.head];
+    //计算缓冲区中可用样本数
+    int8_t numberOfSamples = senseBuf.head - senseBuf.tail;
+    if (numberOfSamples < 0) {
+      numberOfSamples += MAX30102_SENSE_BUF_SIZE;
+    }
+    //填充样本
+    while(numberOfSamples--) {
+      redBuffer[i] = senseBuf.red[senseBuf.tail];
+      irBuffer[i] = senseBuf.IR[senseBuf.tail];
+      //还有新数据，指向缓冲区中的下一个样本
+      senseBuf.tail++;
+      senseBuf.tail %= MAX30102_SENSE_BUF_SIZE;
+      i++;
+      if(i == bufferLength) break;
+    }
   }
 
   //计算bufferLength个样本的心率和血氧饱和度
