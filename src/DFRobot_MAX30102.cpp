@@ -353,7 +353,7 @@ void DFRobot_MAX30102::getNewData(void)//循环获取新数据
       numberOfSamples = writePointer - readPointer;
       if (numberOfSamples < 0) numberOfSamples += 32;//待读取样本数量
       int32_t bytesNeedToRead = numberOfSamples * _activeLEDs * 3;//待读取字节数
-        //从传感器获取相应字节数
+        // 从传感器获取相应字节数
         while (bytesNeedToRead > 0) {
           senseBuf.head++;
           senseBuf.head %= MAX30102_SENSE_BUF_SIZE;//指向新数据的指针
@@ -401,7 +401,6 @@ void DFRobot_MAX30102::getNewData(void)//循环获取新数据
 void DFRobot_MAX30102::heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Valid,int32_t* heartRate,int8_t* heartRateValid)
 {
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
-  //Arduino Uno
   uint16_t irBuffer[100];
   uint16_t redBuffer[100];
 #else
@@ -417,6 +416,7 @@ void DFRobot_MAX30102::heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Va
     if (numberOfSamples < 0) {
       numberOfSamples += MAX30102_SENSE_BUF_SIZE;
     }
+    Serial.println(numberOfSamples);
     //填充样本
     while(numberOfSamples--) {
       redBuffer[i] = senseBuf.red[senseBuf.tail];

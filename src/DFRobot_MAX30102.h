@@ -59,8 +59,13 @@
 #define MAX30102_PARTID          0xFF//Part ID:0x15
 #define MAX30102_EXPECTED_PARTID  0x15
 
-//存放传感器读数的缓冲区大小，不能小于2
+//存放传感器读数的循环缓冲区大小，不能小于2
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
 #define MAX30102_SENSE_BUF_SIZE  2
+#else
+#define MAX30102_SENSE_BUF_SIZE  30
+#endif
+
 
 class DFRobot_MAX30102
 {
