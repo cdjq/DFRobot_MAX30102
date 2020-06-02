@@ -1,7 +1,7 @@
 # DFRobot_MAX30102 心率和血氧传感器库
 DFRobot_MAX30102是基于MAX30102芯片的心率血氧传感器库，可以通过被测者的手指快速测量被测者的心率和血氧浓度<br>
 该库的示例有：串口上显示实时基础读数，串口绘图器显示心跳，计算心率、血氧浓度、模块温度<br>
-该库提供了所有寄存器的配置方法，可根据需要放在public。<br>
+该库提供了所有寄存器的配置方法，可根据需要公开调用，自由控制MAX30102。<br>
 
 ## Product Link （链接到英文商城）
     SKU：产品名称
@@ -98,12 +98,11 @@ FireBeetle-M0        |      √       |              |             |
 
 ## History
 
-- Data 2020-5-9
+- Data 2020-6-1
 - Version V0.1
 
 
 ## Credits
 
 Written by(hangyu.ye@dfrobot.com), 2020. (Welcome to our [website](https://www.dfrobot.com/))
-
 
