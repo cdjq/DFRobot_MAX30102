@@ -50,7 +50,7 @@ void setup()
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
    */
   particleSensor.sensorConfiguration(/*ledBrightness=*/50, /*sampleAverage=*/SAMPLEAVG_4, \
-                        /*ledMode=*/MODE_RED_IR, /*sampleRate=*/SAMPLERATE_100, \
+                        /*ledMode=*/MODE_MULTILED, /*sampleRate=*/SAMPLERATE_100, \
                         /*pulseWidth=*/PULSEWIDTH_411, /*adcRange=*/ADCRANGE_16384);
 }
 

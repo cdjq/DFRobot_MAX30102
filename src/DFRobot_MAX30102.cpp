@@ -204,14 +204,15 @@ void DFRobot_MAX30102::resetFIFO(void)
   writeReg(MAX30102_FIFOOVERFLOW, &byteTemp, 1);
   writeReg(MAX30102_FIFOREADPTR, &byteTemp, 1);
 }
-
-uint8_t DFRobot_MAX30102::getWritePointer(void)//得到FIFO写指针
+//得到FIFO写指针
+uint8_t DFRobot_MAX30102::getWritePointer(void)
 {
   uint8_t byteTemp;
   readReg(MAX30102_FIFOWRITEPTR, &byteTemp, 1);
   return byteTemp;
 }
-uint8_t DFRobot_MAX30102::getReadPointer(void)//得到FIFO读指针
+//得到FIFO读指针
+uint8_t DFRobot_MAX30102::getReadPointer(void)
 {
   uint8_t byteTemp;
   readReg(MAX30102_FIFOREADPTR, &byteTemp, 1);
@@ -243,8 +244,8 @@ void DFRobot_MAX30102::disableFIFORollover(void)
   FIFOReg.RollOver = 0;
   writeReg(MAX30102_FIFOCONFIG, &FIFOReg, 1);
 }
-
-void DFRobot_MAX30102::setFIFOAlmostFull(uint8_t numberOfSamples)//触发该中断的样本数 = 32 - numberOfSamples
+//触发该中断的样本数 = 32 - numberOfSamples
+void DFRobot_MAX30102::setFIFOAlmostFull(uint8_t numberOfSamples)
 {
   sFIFO_t FIFOReg;
   readReg(MAX30102_FIFOCONFIG, &FIFOReg, 1);
@@ -254,7 +255,7 @@ void DFRobot_MAX30102::setFIFOAlmostFull(uint8_t numberOfSamples)//触发该中�
 
 ///获取温度
 
-float DFRobot_MAX30102::readTemperatureC()//返回温度用摄氏度表示
+float DFRobot_MAX30102::readTemperatureC()
 {
   //使能
   uint8_t byteTemp = 0x01;
@@ -338,7 +339,7 @@ uint32_t DFRobot_MAX30102::getIR(void)
   return (senseBuf.IR[senseBuf.head]);
 }
 
-void DFRobot_MAX30102::getNewData(void)//循环获取新数据
+void DFRobot_MAX30102::getNewData(void)
 {
   int32_t numberOfSamples = 0;
   uint8_t readPointer = 0;//读取FIFO读指针

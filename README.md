@@ -46,7 +46,7 @@ To use this library, first download the library file, paste it into the \Arduino
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
    */
   void sensorConfiguration(uint8_t ledBrightness = 0x1F, uint8_t sampleAverage = SAMPLEAVG_4, \
-                           uint8_t ledMode = MODE_RED_IR, uint8_t sampleRate = SAMPLERATE_400, \
+                           uint8_t ledMode = MODE_MULTILED, uint8_t sampleRate = SAMPLERATE_400, \
                            uint8_t pulseWidth = PULSEWIDTH_411, uint8_t adcRange = ADCRANGE_4096);
 
   /*!

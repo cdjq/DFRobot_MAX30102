@@ -49,7 +49,7 @@ void setup()
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
    */
   particleSensor.sensorConfiguration(/*ledBrightness=*/0x1F, /*sampleAverage=*/SAMPLEAVG_4, \
-                                  /*ledMode=*/MODE_RED_IR, /*sampleRate=*/SAMPLERATE_400, \
+                                  /*ledMode=*/MODE_MULTILED, /*sampleRate=*/SAMPLERATE_400, \
                                   /*pulseWidth=*/PULSEWIDTH_411, /*adcRange=*/ADCRANGE_4096);
 }
 
@@ -69,4 +69,5 @@ void loop()
    */
   Serial.print(particleSensor.getIR());
   Serial.println();
+  delay(100);
 }

@@ -37,6 +37,7 @@ void setup()
    */
   while (!particleSensor.begin()) {//使用默认配置
     Serial.println("MAX30102 was not found");
+    delay(1);
   }
 
   /*!
@@ -54,17 +55,19 @@ void setup()
 void loop()
 {
   //打印结果
-  Serial.print("temperatureC=");
+  Serial.print("temperature=");
   /*!
    *@brief 获取模块温度，单位是摄氏度
    *@return 浮点型温度值
    */
   Serial.print(particleSensor.readTemperatureC());
-  Serial.print(" temperatureF=");
+  Serial.print(" degrees Celsius");
+  Serial.print(", temperature=");
   /*!
    *@brief 获取模块温度，单位是华氏度
    *@return 浮点型温度值
    */
   Serial.print(particleSensor.readTemperatureF());
+  Serial.print(" degrees Fahrenheit");
   Serial.println();
 }
