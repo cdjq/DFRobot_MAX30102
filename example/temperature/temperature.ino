@@ -49,7 +49,7 @@ void setup()
    *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围
    *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
    */
-  particleSensor.sensorConfiguration(0); //只设置了ledBrightness，其他使用默认
+  particleSensor.sensorConfiguration(/*ledBrightness=*/0);
 }
 
 void loop()
