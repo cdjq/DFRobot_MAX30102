@@ -37,7 +37,7 @@ void setup()
    */
   while (!particleSensor.begin()) {
     Serial.println("MAX30102 was not found");
-    delay(1);
+    delay(1000);
   }
 
   //设置合理，使串口绘图器上有清楚的锯齿
