@@ -37,7 +37,7 @@ void setup()
    */
   while (!particleSensor.begin()) {
     Serial.println("MAX30102 was not found");
-    delay(1);
+    delay(1000);
   }
 
   /*!
