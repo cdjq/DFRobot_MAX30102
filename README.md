@@ -1,12 +1,13 @@
-# DFRobot_MAX30102 心率和血氧传感器库
-DFRobot_MAX30102是基于MAX30102芯片的心率血氧传感器库。
-MAX30102是一个集成的脉搏血氧仪和心率检测仪生物的传感器，MAX30102采用PPG光电容积脉搏波描记法(PhotoPlethysmoGraphy)测量心率。
-传感器小巧易佩戴，可佩戴于手指和手腕等处进行数据采集。内部集成了18位ADC采集器，并通过I2C输出数据，兼容大多数主控。<br>
-该库的示例有：串口上显示实时基础读数，串口绘图器显示心跳，计算心率、血氧浓度<br>
-该库提供了所有寄存器的配置方法，可根据需要公开调用，自由控制MAX30102。<br>
+# DFRobot_MAX30102 Heart-rate & Oximeter Sensor Library 
+DFRobot_MAX30102 MAX30102-based Heart-rate & Oximeter Sensor Library
+The MAX30102 is an integrated pulse oximetry and heart-rate monitor biosensor module based on PPG ((PhotoPlethysmoGraphy).
+It is so small that you can just wear it on your finger or wrist for data collecting. Internally integrated 18bit ADC, the sensor 
+supports I2C data output, which could be compatible for most controllers.<br>
+Examples included in this library: real-time display basic reading on serial monitor; display heartbeat on serial plotter; heart-rate and SPO2 calculation<br>
+The library offers configuration methods of all registers for users to call so as to freely control MAX30102.<br>
 
 ## Product Link （链接到英文商城）
-    SKU：产品名称
+    SKU：SEN0344
    
 ## Table of Contents
 
@@ -19,8 +20,8 @@ MAX30102是一个集成的脉搏血氧仪和心率检测仪生物的传感器，
 
 ## Summary
 
-* 心跳识别和心率显示 <br>
-* 测血氧浓度 <br>
+* Heartbeat recognition and heart rate display <br>
+* SPO2 Measurement <br>
 
 
 ## Installation
@@ -31,7 +32,7 @@ To use this library, first download the library file, paste it into the \Arduino
 
 ```C++
   /*!
-   *@brief 传感器初始化
+   *@brief Init Sensor
    *@param pWire IIC bus pointer object and construction device, can both pass or not pass parameters (Wire in default)
    *@param i2cAddr Chip IIC address (0x57 in default)
    *@return true or false
@@ -39,48 +40,48 @@ To use this library, first download the library file, paste it into the \Arduino
   bool begin(TwoWire *pWire = &Wire, uint8_t i2cAddr = MAX30102_IIC_ADDRESS);
 
   /*!
-   *@brief 传感器配置，使用给出的宏定义进行配置
-   *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=Off ，255=50mA）
-   *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
-   *@param ledMode LED灯的模式，默认同时使用红光和红外光
-   *@param sampleRate 采样速率，默认每秒取400个样本
-   *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围
-   *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
+   *@brief Use macro definition to configure sensor 
+   *@param ledBrightness LED brightness, default value: 0x1F（6.4mA), Range: 0~255（0=Off, 255=50mA）
+   *@param sampleAverage Average multiple samples then draw once, reduce data throughput, default 4 samples average
+   *@param ledMode LED mode, default to use red light and IR at the same time 
+   *@param sampleRate Sampling rate, default 400 samples every second 
+   *@param pulseWidth Pulse width: the longer the pulse width, the wider the detection range. Default to be Max range 
+   *@param adcRange ADC Measurement Range, default 4096 (nA)，15.63(pA) per LSB
    */
   void sensorConfiguration(uint8_t ledBrightness = 0x1F, uint8_t sampleAverage = SAMPLEAVG_4, \
                            uint8_t ledMode = MODE_MULTILED, uint8_t sampleRate = SAMPLERATE_400, \
                            uint8_t pulseWidth = PULSEWIDTH_411, uint8_t adcRange = ADCRANGE_4096);
 
   /*!
-   *@brief 获得red值
-   *@return 红光读数
+   *@brief get red value 
+   *@return Red light reading
    */
   uint32_t getRed(void);
 
   /*!
-   *@brief 获得IR值
-   *@return 红外光读数
+   *@brief Get IR value 
+   *@return IR reading 
    */
   uint32_t getIR(void);
 
   /*!
-   *@brief 获取模块温度，单位是摄氏度
-   *@return 浮点型温度值
+   *@brief Get module temperature in unit °C
+   *@return Float temperature 
    */
   float readTemperatureC();
 
   /*!
-   *@brief 获取模块温度，单位是华氏度
-   *@return 浮点型温度值
+   *@brief Get module temperature in unit ℉
+   *@return Float temperature 
    */
   float readTemperatureF();
 
   /*!
-   *@brief 计算心率和血氧饱和度
-   *@param *SPO2                  [out]计算的SpO2值
-   *@param *SPO2Valid             [out]如果计算的SpO2值是有效的，值为1
-   *@param *heartRate             [out]计算的心率值
-   *@param *heartRateValid        [out]如果计算出的心率值是有效的，值为1
+   *@brief Calculate heart rate and SPO2 
+   *@param *SPO2                  [out]Calculated SPO2
+   *@param *SPO2Valid             [out]If the calculated SPO2 is valid, the value is 1
+   *@param *heartRate             [out]Calculated heart-rate
+   *@param *heartRateValid        [out]If the calculated heart-rate is valid, the value is 1
    */
   void heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Valid,int32_t* heartRate,int8_t* heartRateValid);
 
