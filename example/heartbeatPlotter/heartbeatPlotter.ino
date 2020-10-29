@@ -1,8 +1,8 @@
 /*!
  * @file heartbeatPlotter.ino
- * @brief 在Arduino的串行绘图仪上显示用户的心跳，点击工具->“串口绘图器”，确保右下角波特率为115200
- * @n 最好用橡皮筋将传感器固定在手指上，用手按压会改变手指的血液流动，足以影响测量结果
- * @n 本示例支持的主板有ESP8266、FireBeetle-M0、UNO、ESP32、Leonardo 、Mega2560
+ * @brief Display heartbeat diagram on the Arduino serial plotter: click tool->"Serial Plotter". The baud rate should be 115200
+ * @n Try to fix the sensor on your finger in using to avoid the effect of pressure change on data output.
+ * @n This library supports mainboards: ESP8266, FireBeetle-M0, UNO, ESP32, Leonardo, Mega2560
  * @copyright  Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
@@ -16,7 +16,7 @@
 DFRobot_MAX30102 particleSensor;
 
 /*
-传感器配置中使用的宏定义选项
+Macro definition options in sensor configuration 
 sampleAverage: SAMPLEAVG_1 SAMPLEAVG_2 SAMPLEAVG_4 
                SAMPLEAVG_8 SAMPLEAVG_16 SAMPLEAVG_32
 ledMode:       MODE_REDONLY  MODE_RED_IR  MODE_MULTILED
@@ -27,10 +27,10 @@ adcRange:      ADCRANGE_2048 ADCRANGE_4096 ADCRANGE_8192 ADCRANGE_16384
 */
 void setup()
 {
-  //串口初始化
+  //Init serial 
   Serial.begin(115200);
   /*!
-   *@brief 传感器初始化
+   *@brief Init sensor
    *@param pWire IIC bus pointer object and construction device, can both pass or not pass parameters (Wire in default)
    *@param i2cAddr Chip IIC address (0x57 in default)
    *@return true or false
@@ -40,15 +40,15 @@ void setup()
     delay(1000);
   }
 
-  //设置合理，使串口绘图器上有清楚的锯齿
+  //Set reasonably to make sure there is clear sawtooth figure on the serial plotter
   /*!
-   *@brief 传感器配置，使用给出的宏定义进行配置
-   *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=Off ，255=50mA）
-   *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
-   *@param ledMode LED灯的模式，默认同时使用红光和红外光
-   *@param sampleRate 采样速率，默认每秒取400个样本
-   *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围
-   *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
+   *@brief Use macro definition to configure sensor 
+   *@param ledBrightness LED brightness, default value: 0x1F（6.4mA), Range: 0~255（0=Off, 255=50mA）
+   *@param sampleAverage Average multiple samples then draw once, reduce data throughput, default 4 samples average
+   *@param ledMode LED mode, default to use red light and IR at the same time
+   *@param sampleRate Sampling rate, default 400 samples every second
+   *@param pulseWidth Pulse width: the longer the pulse width, the wider the detection range. Default to be Max range
+   *@param adcRange Measurement Range, default 4096 (nA), 15.63(pA) per LSB
    */
   particleSensor.sensorConfiguration(/*ledBrightness=*/60, /*sampleAverage=*/SAMPLEAVG_8, \
                                   /*ledMode=*/MODE_MULTILED, /*sampleRate=*/SAMPLERATE_400, \
@@ -57,10 +57,10 @@ void setup()
 
 void loop()
 {
-  //将原始数据发送到串口，打开串口绘图工具查看
+  //Send raw data to serial, open seril plotter to check 
   /*!
-   *@brief 获得IR值
-   *@return 红外光读数
+   *@brief Get IR value 
+   *@return IR reading 
    */
   Serial.println(particleSensor.getIR()); 
 }
