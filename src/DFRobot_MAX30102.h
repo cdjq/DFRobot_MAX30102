@@ -2,7 +2,7 @@
  * @file DFRobot_MAX30102.h
  * @brief Define the basic structure of class DFRobot_MAX30102
  * @n This is a library used to drive heart rate and oximeter sensor
- * @n 可以自由控制传感器，采集红光和红外光读数，包含了心率和血氧饱和度的算法
+ * @n Function: freely control sensor, collect readings of red light and IR, algorithms for heart-rate and SPO2
  * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @licence     The MIT License (MIT)
  * @author [YeHangYu](hangyu.ye@dfrobot.com)
@@ -59,7 +59,7 @@
 #define MAX30102_PARTID          0xFF//Part ID:0x15
 #define MAX30102_EXPECTED_PARTID  0x15
 
-//存放传感器读数的循环缓冲区大小，不能小于2
+//Circular buffer for storing sensor readings, cannot be smaller than 2 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
 #define MAX30102_SENSE_BUF_SIZE  2
 #else
@@ -69,8 +69,8 @@
 
 class DFRobot_MAX30102
 {
-//配置选项
-//FIFO Configuration(寄存器地址0x08)
+//Configuration Options 
+//FIFO Configuration(Register address 0x08)
 //sampleAverage(Table 3. Sample Averaging)
 #define SAMPLEAVG_1     0
 #define SAMPLEAVG_2     1
@@ -79,13 +79,13 @@ class DFRobot_MAX30102
 #define SAMPLEAVG_16    4
 #define SAMPLEAVG_32    5
 
-//Mode configuration(寄存器地址0x09)
+//Mode configuration(Register address 0x09)
 //ledMode(Table 4. Mode Control)
 #define MODE_REDONLY    2
 #define MODE_RED_IR     3
 #define MODE_MULTILED   7
 
-//Particle sensing configuration(寄存器地址0x0A)
+//Particle sensing configuration(Register address 0x0A)
 //adcRange(Table 5. SpO2 ADC Range Control)
 #define ADCRANGE_2048   0
 #define ADCRANGE_4096   1
@@ -106,7 +106,7 @@ class DFRobot_MAX30102
 #define PULSEWIDTH_215  2
 #define PULSEWIDTH_411  3
 
-//Multi-LED Mode Control Registers(寄存器地址0x011)
+//Multi-LED Mode Control Registers(Register address 0x011)
 #define SLOT_NONE       0
 #define SLOT_RED_LED    1
 #define SLOT_IR_LED     2
@@ -216,7 +216,7 @@ public:
   } __attribute__ ((packed)) sMultiLED_t;
 
   /*!
-   *@brief 保存样本的循环缓冲区
+   *@brief Circular buffer for storing samples 
    */
   typedef struct {
     uint32_t red[MAX30102_SENSE_BUF_SIZE];
@@ -228,12 +228,12 @@ public:
 public:
 
   /*!
-   *@brief 构造函数
+   *@brief Constructor 
    */
   DFRobot_MAX30102(void);
 
   /*!
-   *@brief 传感器初始化
+   *@brief Init sensor 
    *@param pWire IIC bus pointer object and construction device, can both pass or not pass parameters (Wire in default)
    *@param i2cAddr Chip IIC address (0x57 in default)
    *@return true or false
@@ -241,13 +241,13 @@ public:
   bool begin(TwoWire *pWire = &Wire, uint8_t i2cAddr = MAX30102_IIC_ADDRESS);
 
   /*!
-   *@brief 传感器配置，使用给出的宏定义进行配置
-   *@param ledBrightness LED灯的亮度，默认值0x1F（6.4mA），取值范围: 0~255（0=Off ，255=50mA）
-   *@param sampleAverage 多个样本平均后抽取一次，减少数据吞吐量，默认4个样本平均
-   *@param ledMode LED灯的模式，默认同时使用红光和红外光
-   *@param sampleRate 采样速率，默认每秒取400个样本
-   *@param pulseWidth 脉冲宽度，脉冲宽度越长，探测范围就越大，默认最大范围
-   *@param adcRange ADC量程，默认4096 (nA)，15.63(pA) per LSB
+   *@brief Use macro definition to configure sensor 
+   *@param ledBrightness LED brightness, default value: 0x1F（6.4mA), Range: 0~255（0=Off, 255=50mA）
+   *@param sampleAverage Average multiple samples then draw once, reduce data throughput, default 4 samples average
+   *@param ledMode LED mode, default to use red light and IR at the same time
+   *@param sampleRate Sampling rate, default 400 samples every second
+   *@param pulseWidth Pulse width: the longer the pulse width, the wider the detection range. Default to be Max range 
+   *@param adcRange ADCMeasurement Range, default 4096 (nA)，15.63(pA) per LSB
    */
   void sensorConfiguration(uint8_t ledBrightness = 0x1F, uint8_t sampleAverage = SAMPLEAVG_4, \
                            uint8_t ledMode = MODE_MULTILED, uint8_t sampleRate = SAMPLERATE_400, \
@@ -255,189 +255,190 @@ public:
 
   
   /*!
-   *@brief 获得red值
-   *@return 红光读数
+   *@brief get red value
+   *@return Red light reading
    */
   uint32_t getRed(void);
 
   /*!
-   *@brief 获得IR值
-   *@return 红外光读数
+   *@brief Get IR value 
+   *@return IR reading
    */
   uint32_t getIR(void);
 
   /*!
-   *@brief 获取模块温度，单位是摄氏度
-   *@return 浮点型温度值
+   *@brief Get module temperature in unit °C
+   *@return Float temperature
    */
   float readTemperatureC();
 
   /*!
-   *@brief 获取模块温度，单位是华氏度
-   *@return 浮点型温度值
+   *@brief  Get module temperature in unit ℉
+   *@return Float temperature
    */
   float readTemperatureF();
 
   /*!
-   *@brief 计算心率和血氧饱和度
-   *@param *SPO2                  [out]计算的SpO2值
-   *@param *SPO2Valid             [out]如果计算的SpO2值是有效的，值为1
-   *@param *heartRate             [out]计算的心率值
-   *@param *heartRateValid        [out]如果计算出的心率值是有效的，值为1
+   *@brief Calculate heart rate and SPO2 
+   *@param *SPO2                  [out]Calculated SPO2
+   *@param *SPO2Valid             [out]If the calculated SPO2 is valid, the value is 1
+   *@param *heartRate             [out]Calculated heart-rate
+   *@param *heartRateValid        [out]If the calculated heart-rate is valid, the value is 1
    */
   void heartrateAndOxygenSaturation(int32_t* SPO2,int8_t* SPO2Valid,int32_t* heartRate,int8_t* heartRateValid);
 
 private:
   
   /*!
-   *@brief 所有配置、阈值和数据寄存器复位。复位完成后，复位位自动清零
+   *@brief Reset all configuration, threshold, and data regsiter. When reset completed, auto reset the reset bit
    */
   void softReset();
 
   /*!
-   *@brief 进入省电模式。在省电模式下，所有寄存器都保留其值，读写操作可正常工作。所有中断都清除为零
+   *@brief Enter power-saving mode. In this mode, all registers keep their values, and read and write normally, clear all interrupts to 0. 
    */
   void shutDown();
 
   /*!
-   *@brief 唤醒模块，正常工作
+   *@brief Wake-up mode, work normally 
    */
   void wakeUp();
 
   /*!
-   *@brief 设置LED模式
-   *@param mode 模式使用注释有ledMode的宏定义进行配置
+   *@brief Set LED mode 
+   *@param mode Configure the mode by the macro definition with LEDMode comment 
    */
   void setLEDMode(uint8_t mode);
   
   /*!
-   *@brief 设置ADC量程，默认4096 (nA)，15.63(pA) per LSB
-   *@param adcRange ADC量程使用注释有adcRange的宏定义进行配置
+   *@brief Set ADC measurement range, default 4096 (nA)，15.63(pA) per LSB
+   *@param adcRange Configure ADC measuring range by the macro definition with adcRange comment
    */
   void setADCRange(uint8_t adcRange);
 
   /*!
-   *@brief 设置采样速率
-   *@param sampleRate 采样速率使用注释有sampleRate的宏定义进行配置
+   *@brief Set sampling rate 
+   *@param sampleRate Configure sampling rate by the macro definition with sampleRate comment 
    */
   void setSampleRate(uint8_t sampleRate);
 
   /*!
-   *@brief 设置脉冲宽度，脉冲宽度越长，探测范围就越大
-   *@param pulseWidth 脉冲宽度使用注释有pulseWidth的宏定义进行配置
+   *@brief Set pulse width, the longer the pulse width, the wider the detection range 
+   *@param pulseWidth Configure pulse width by the macro defintion with pulseWidth comment
    */
   void setPulseWidth(uint8_t pulseWidth);
 
   /*!
-   *@brief 设置红灯的亮度
-   *@param amplitude 振幅: 0x00 = 0mA, 0x7F = 25.4mA, 0xFF = 50mA
+   *@brief Set brightness of red light 
+   *@param amplitude Amplitude: 0x00 = 0mA, 0x7F = 25.4mA, 0xFF = 50mA
    */
   void setPulseAmplitudeRed(uint8_t amplitude);
 
   /*!
-   *@brief 设置红外灯的亮度
-   *@param amplitude 振幅: 0x00 = 0mA, 0x7F = 25.4mA, 0xFF = 50mA
+   *@brief Set IR brightness 
+   *@param amplitude Amplitude: 0x00 = 0mA, 0x7F = 25.4mA, 0xFF = 50mA
    */
   void setPulseAmplitudeIR(uint8_t amplitude);
 
   /*!
-   *@brief 根据给定编号配置led设备，一共有四个时隙，我们只用到slot1和slot2，设备有红光和红外光
-   *@param slotNumber 槽编号，可取1,2
-   *@param device LED设备名：SLOT_RED_LED 或 SLOT_IR_LED
+   *@brief Configure led device according to the given number, 4 timeslot in total. We will only use slot1 and slot2. There are red light and IR light 
+   *@param slotNumber Slot Number, can be 1, 2
+   *@param device LED Device name：SLOT_RED_LED or SLOT_IR_LED
    */
   void enableSlot(uint8_t slotNumber, uint8_t device);
 
   /*!
-   *@brief 禁用所有槽
+   *@brief Disable all slots 
    */
   void disableAllSlots(void);
 
   /*!
-   *@brief 启用 FIFO Almost Full Flag，当FIFO写指针有一定数量的空闲空间时，就会触发此中断
+   *@brief Enable FIFO Almost Full Flag. This interrupt is triggered when FIFO write pointer has a certian amount of free space.
    */
   void enableAlmostFull(void);
 
   /*!
-   *@brief 禁用 FIFO Almost Full Flag
+   *@brief Disable FIFO Almost Full Flag
    */
   void disableAlmostFull(void);
 
   /*!
-   *@brief 启用 New FIFO Data Ready，当数据FIFO中有一个新样本时，就会触发此中断
+   *@brief Enable New FIFO Data Ready. This interrupt is triggered when there is a new sample in data FIFO
    */
   void enableDataReady(void);
 
   /*!
-   *@brief 禁用 New FIFO Data Ready
+   *@brief Disable New FIFO Data Ready
    */
   void disableDataReady(void);
 
   /*!
-   *@brief 启用 Ambient Light Cancellation Overflow，当SpO2/HR光电二极管的环境光消除功能达到最大值时，就会触发此中断
+   *@brief Enable Ambient Light Cancellation Overflow. This interrupt is triggered when the ambient light cancellation function of SpO2/HR photodiode reaches the maximum
    */
   void enableALCOverflow(void);
 
   /*!
-   *@brief 禁用 Ambient Light Cancellation Overflow
+   *@brief Disable Ambient Light Cancellation Overflow
    */
   void disableALCOverflow(void);
 
   /*!
-   *@brief 启用 Internal Temperature Ready Flag，当内部模具温度转换完成时，会触发此中断
+   *@brief Enable Internal Temperature Ready Flag. This interrupt is triggered when the internal mold temperature conversion is done.
    */
   void enableDieTempReady(void);
 
   /*!
-   *@brief 禁用 Internal Temperature Ready Flag
+   *@brief Disable Internal Temperature Ready Flag
    */
   void disableDieTempReady(void);
 
   /*!
-   *@brief 设置样本平均，传感器将会发送多个样本的平均值
-   *@param samples 平均的样本数，使用注释有sampleAverage的宏定义进行配置
+   *@brief Set sample average. The sensor will send the average of multiple samples
+   *@param samples Averaged sample. Configure it by the macro definition with the comment sampleAverage 
    */
   void setFIFOAverage(uint8_t samples);
 
   /*!
-   *@brief 启用 FIFO Rolls on Full，如果FIFO满了，FIFO地址将归0,FIFO将继续填充新数据
+   *@brief Enable FIFO Rolls on Full. If the FIFO is full, the FIFO address will return to 0 and FIFO will continue to fill in with new data.
    */
   void enableFIFORollover();
 
   /*!
-   *@brief 禁用 FIFO Rolls on Full，如果FIFO满了，新样本将会丢失
+   *@brief Disable FIFO Rolls on Full. New sample will be lost if FIFO is full.
    */
   void disableFIFORollover();
 
   /*!
-   *@brief 指定空闲空间大小，使能中断后，达到设置的大小会触发'Almost Full'中断
-   *@param numberOfSamples 空闲样本空间大小，空闲样本达到该值时，触发中断，如果设置为2则填30个样本会触发中断，设置为0则填32个样本会触发中断
+   *@brief Specify the size of free space. After enabling interrupt, the "almost full" interrupt will be triggered when the set size is reached.
+   *@param numberOfSamples The size of free sample space. Trigger the interrupt when free samples reached this value. 
+   *@ If set to 2, the interrupt will be triggered by filling in 30 samples. If set to 0, that will be triggered in 32 samples.
    */
   void setFIFOAlmostFull(uint8_t numberOfSamples);
 
   /*!
-   *@brief 读取芯片ID
+   *@brief Read chip ID
    */
   uint8_t getPartID();
 
   /*!
-   *@brief 得到FIFO写指针
-   *@return 写指针
+   *@brief Get FIFO write pointer 
+   *@return Write pointer 
    */
   uint8_t getWritePointer(void);
 
   /*!
-   *@brief 得到FIFO读指针
-   *@return 读指针
+   *@brief Get FIFO read pointer 
+   *@return Read pointer 
    */
   uint8_t getReadPointer(void);
 
   /*!
-   *@brief 重置FIFO
+   *@brief Reset FIFO
    */
   void resetFIFO(void);
 
   /*!
-   *@brief 读取新数据并保存在结构体缓冲区
+   *@brief Read new data and save it in consctructor buffer 
    */
   void getNewData(void);
 
@@ -448,7 +449,7 @@ private:
   TwoWire *_pWire;
   uint8_t _i2cAddr;
   uint8_t _activeLEDs;
-  sSenseBuf_t senseBuf;//存放多组数据的缓冲区
+  sSenseBuf_t senseBuf;//Buffer for storing multiple groups of array
 };
 
 #endif
