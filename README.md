@@ -5,9 +5,6 @@ It is so small that you can just wear it on your finger or wrist for data collec
 supports I2C data output, which could be compatible for most controllers.<br>
 Examples included in this library: real-time display basic reading on serial monitor; display heartbeat on serial plotter; heart-rate and SPO2 calculation<br>
 The library offers configuration methods of all registers for users to call so as to freely control MAX30102.<br>
-
-## Product Link （链接到英文商城）
-    SKU：SEN0344
    
 ## Table of Contents
 
